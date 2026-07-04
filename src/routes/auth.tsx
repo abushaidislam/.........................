@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { Mail, Lock, ShieldCheck } from "lucide-react";
+import { Mail, ShieldCheck } from "lucide-react";
 import {
   AegisScreen,
   BrandBar,
@@ -24,6 +24,9 @@ import {
   inputStyle,
   soft,
 } from "@/components/aegis/chrome";
+import { PasswordField, StrengthMeter, scoreStrength } from "@/components/aegis/password-field";
+
+const LAST_EMAIL_KEY = "aegis.auth.lastEmail";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
