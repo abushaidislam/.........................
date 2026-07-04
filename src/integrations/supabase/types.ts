@@ -14,7 +14,114 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          onboarded_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          onboarded_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          onboarded_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      vault_accounts: {
+        Row: {
+          algorithm: string
+          created_at: string
+          digits: number
+          icon_slug: string | null
+          id: string
+          issuer: string
+          label: string
+          period: number
+          secret_ciphertext: string
+          secret_iv: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          algorithm?: string
+          created_at?: string
+          digits?: number
+          icon_slug?: string | null
+          id?: string
+          issuer?: string
+          label?: string
+          period?: number
+          secret_ciphertext: string
+          secret_iv: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          algorithm?: string
+          created_at?: string
+          digits?: number
+          icon_slug?: string | null
+          id?: string
+          issuer?: string
+          label?: string
+          period?: number
+          secret_ciphertext?: string
+          secret_iv?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vault_meta: {
+        Row: {
+          created_at: string
+          kdf_algorithm: string
+          kdf_salt: string
+          passphrase_hint: string | null
+          recovery_wrapped_key: string | null
+          recovery_wrapped_key_iv: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          kdf_algorithm?: string
+          kdf_salt: string
+          passphrase_hint?: string | null
+          recovery_wrapped_key?: string | null
+          recovery_wrapped_key_iv?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          kdf_algorithm?: string
+          kdf_salt?: string
+          passphrase_hint?: string | null
+          recovery_wrapped_key?: string | null
+          recovery_wrapped_key_iv?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
