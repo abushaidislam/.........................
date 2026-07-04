@@ -113,21 +113,35 @@ function TopBar({
         </AnimatePresence>
       </div>
 
-      {/* Segmented progress dots */}
+      {/* Segmented progress dots with morphing active pill */}
       <div className="flex items-center gap-1.5">
-        {Array.from({ length: total }).map((_, i) => (
-          <motion.span
-            key={i}
-            initial={false}
-            animate={{
-              width: i === step ? 20 : 6,
-              backgroundColor: i <= step ? CHARCOAL : "rgba(28,28,28,0.15)",
-            }}
-            transition={soft}
-            className="h-[6px] rounded-full"
-          />
-        ))}
+        {Array.from({ length: total }).map((_, i) => {
+          const active = i === step;
+          const passed = i < step;
+          return (
+            <span
+              key={i}
+              className="relative h-[6px] rounded-full"
+              style={{
+                width: active ? 20 : 6,
+                transition: "width 320ms cubic-bezier(0.22,0.9,0.3,1)",
+                background: passed ? CHARCOAL : "rgba(28,28,28,0.15)",
+                willChange: "width",
+              }}
+            >
+              {active && (
+                <motion.span
+                  layoutId="progress-pill"
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: CHARCOAL, willChange: "transform" }}
+                  transition={{ type: "spring", stiffness: 420, damping: 36, mass: 0.7 }}
+                />
+              )}
+            </span>
+          );
+        })}
       </div>
+
 
       <div className="flex w-16 justify-end">
         {canSkip && (
@@ -746,14 +760,22 @@ function StepDone({ next }: { next: () => void }) {
 const TOTAL = 7;
 
 export default function Onboarding() {
-  const [step, setStep] = useState(0);
+  const [[step, dir], setState] = useState<[number, number]>([0, 1]);
 
-  const next = () => setStep((s) => Math.min(s + 1, TOTAL - 1));
-  const back = () => setStep((s) => Math.max(s - 1, 0));
-  const skip = () => setStep(TOTAL - 1);
-  const restart = () => setStep(0);
+  const next = () => setState(([s]) => [Math.min(s + 1, TOTAL - 1), 1]);
+  const back = () => setState(([s]) => [Math.max(s - 1, 0), -1]);
+  const skip = () => setState(([s]) => [TOTAL - 1, s < TOTAL - 1 ? 1 : -1]);
+  const restart = () => setState([0, -1]);
 
   const canSkip = step > 0 && step < TOTAL - 1;
+
+  const variants = {
+    enter: (d: number) => ({ x: d > 0 ? 32 : -32, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (d: number) => ({ x: d > 0 ? -32 : 32, opacity: 0 }),
+  };
+
+  const pageSpring = { type: "spring" as const, stiffness: 380, damping: 34, mass: 0.7 };
 
   return (
     <div
@@ -768,15 +790,27 @@ export default function Onboarding() {
       >
         <TopBar step={step} total={TOTAL} onBack={back} onSkip={skip} canSkip={canSkip} />
 
-        <div className="relative flex-1 overflow-hidden">
-          <AnimatePresence mode="wait" initial={false}>
+        <div className="relative flex-1 overflow-hidden" style={{ touchAction: "pan-y" }}>
+          <AnimatePresence mode="wait" initial={false} custom={dir}>
             <motion.div
               key={step}
-              initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -8, filter: "blur(6px)" }}
-              transition={{ duration: 0.4, ease: [0.22, 0.9, 0.3, 1] }}
+              custom={dir}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={pageSpring}
+              drag="x"
+              dragElastic={0.14}
+              dragMomentum={false}
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(_, info) => {
+                const power = info.offset.x + info.velocity.x * 0.2;
+                if (power < -80 && step < TOTAL - 1) next();
+                else if (power > 80 && step > 0) back();
+              }}
               className="absolute inset-0"
+              style={{ willChange: "transform, opacity", backfaceVisibility: "hidden" }}
             >
               {step === 0 && <StepWelcome next={next} />}
               {step === 1 && <StepFeatures next={next} />}
@@ -792,6 +826,7 @@ export default function Onboarding() {
     </div>
   );
 }
+
 
 /* Silence unused warnings for helpers reserved for later expansion */
 void GhostButton;
