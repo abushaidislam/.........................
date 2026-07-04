@@ -17,7 +17,7 @@ import {
   Notice,
   soft,
 } from "@/components/aegis/chrome";
-import { AegisMenu } from "@/components/aegis/NavSheet";
+import { BottomTabs } from "@/components/aegis/BottomTabs";
 import { motion } from "framer-motion";
 import { lockVault } from "@/lib/vault-session";
 
