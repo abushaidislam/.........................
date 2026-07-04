@@ -8,11 +8,8 @@ import { Shield, Plus, Loader2 } from "lucide-react";
 import {
   AegisScreen,
   BrandBar,
-  CHARCOAL,
-  CREAM_SOFT,
   Display,
   Eyebrow,
-  INSET_SHADOW,
   IconChip,
   Lede,
   MUTED,
@@ -20,7 +17,7 @@ import {
   PrimaryButton,
   soft,
 } from "@/components/aegis/chrome";
-import { AegisMenu } from "@/components/aegis/NavSheet";
+import { BottomTabs } from "@/components/aegis/BottomTabs";
 
 export const Route = createFileRoute("/_authenticated/_locked/vault")({
   component: VaultPage,
@@ -64,10 +61,10 @@ function VaultPage() {
     };
   }, [unlocked]);
 
-
   return (
     <AegisScreen>
-      <BrandBar right={<AegisMenu userEmail={user.email} />} />
+      <BrandBar />
+
 
 
       <motion.div
@@ -87,7 +84,7 @@ function VaultPage() {
         </div>
       </motion.div>
 
-      <div className="flex-1 overflow-y-auto pb-24 pr-1">
+      <div className="flex-1 overflow-y-auto pb-28 pr-1">
         {error && <Notice kind="error">{error}</Notice>}
 
         {accounts === null && !error && (
@@ -117,29 +114,11 @@ function VaultPage() {
         )}
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...soft, delay: 0.1 }}
-        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center pb-[max(20px,env(safe-area-inset-bottom))]"
-      >
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={() => navigate({ to: "/vault/new" })}
-          className="pointer-events-auto flex h-12 items-center gap-2 rounded-full px-5 text-[13.5px] font-medium"
-          style={{
-            background: CHARCOAL,
-            color: CREAM_SOFT,
-            boxShadow: `${INSET_SHADOW}, 0 12px 32px -10px rgba(28,28,28,0.5)`,
-          }}
-        >
-          <Plus className="h-4 w-4" strokeWidth={2} />
-          Add account
-        </motion.button>
-      </motion.div>
+      <BottomTabs />
     </AegisScreen>
   );
 }
+
 
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {

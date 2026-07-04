@@ -25,7 +25,7 @@ import {
   inputStyle,
   soft,
 } from "@/components/aegis/chrome";
-import { AegisMenu } from "@/components/aegis/NavSheet";
+import { BottomTabs } from "@/components/aegis/BottomTabs";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   component: ProfilePage,
@@ -104,7 +104,7 @@ function ProfilePage() {
 
   return (
     <AegisScreen>
-      <BrandBar right={<AegisMenu userEmail={user.email} />} />
+      <BrandBar />
 
       <motion.div
         initial={{ opacity: 0, y: 6 }}
@@ -120,7 +120,7 @@ function ProfilePage() {
         </div>
       </motion.div>
 
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto pb-6">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto pb-28">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -204,6 +204,7 @@ function ProfilePage() {
           Sign out
         </GhostButton>
       </div>
+      <BottomTabs />
     </AegisScreen>
   );
 }

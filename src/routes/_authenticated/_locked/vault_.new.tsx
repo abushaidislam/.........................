@@ -27,7 +27,7 @@ import {
   inputStyle,
   soft,
 } from "@/components/aegis/chrome";
-import { AegisMenu } from "@/components/aegis/NavSheet";
+import { BottomTabs } from "@/components/aegis/BottomTabs";
 
 export const Route = createFileRoute("/_authenticated/_locked/vault_/new")({
   component: NewAccountPage,
@@ -75,18 +75,15 @@ function NewAccountPage() {
     <AegisScreen>
       <BrandBar
         right={
-          <div className="flex items-center gap-1.5">
-            <motion.button
-              whileTap={{ scale: 0.94 }}
-              onClick={() => navigate({ to: "/vault" })}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px]"
-              style={{ color: CHARCOAL, background: "rgba(28,28,28,0.04)", border: `1px solid ${BORDER}` }}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
-              Back
-            </motion.button>
-            <AegisMenu userEmail={user.email} />
-          </div>
+          <motion.button
+            whileTap={{ scale: 0.94 }}
+            onClick={() => navigate({ to: "/vault" })}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12.5px]"
+            style={{ color: CHARCOAL, background: "rgba(28,28,28,0.04)", border: `1px solid ${BORDER}` }}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.8} />
+            Back
+          </motion.button>
         }
       />
 
@@ -120,7 +117,7 @@ function NewAccountPage() {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto pb-2">
+      <div className="flex-1 overflow-y-auto pb-28">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={tab}
@@ -151,6 +148,7 @@ function NewAccountPage() {
           </motion.div>
         </AnimatePresence>
       </div>
+      <BottomTabs />
     </AegisScreen>
   );
 }

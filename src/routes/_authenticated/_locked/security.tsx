@@ -17,7 +17,7 @@ import {
   Notice,
   soft,
 } from "@/components/aegis/chrome";
-import { AegisMenu } from "@/components/aegis/NavSheet";
+import { BottomTabs } from "@/components/aegis/BottomTabs";
 import { motion } from "framer-motion";
 import { lockVault } from "@/lib/vault-session";
 
@@ -72,7 +72,7 @@ function SecurityPage() {
 
   return (
     <AegisScreen>
-      <BrandBar right={<AegisMenu userEmail={user.email} />} />
+      <BrandBar />
 
       <motion.div
         initial={{ opacity: 0, y: 6 }}
@@ -88,7 +88,7 @@ function SecurityPage() {
         </div>
       </motion.div>
 
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto pb-6">
+      <div className="flex flex-1 flex-col gap-3 overflow-y-auto pb-28">
         <InfoRow
           icon={<KeyRound className="h-4 w-4" strokeWidth={1.8} />}
           title="Passphrase hint"
@@ -116,6 +116,7 @@ function SecurityPage() {
         />
         {notice && <Notice kind={notice.kind}>{notice.text}</Notice>}
       </div>
+      <BottomTabs />
     </AegisScreen>
   );
 }
