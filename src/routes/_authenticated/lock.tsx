@@ -405,9 +405,12 @@ function LockPage() {
                 try {
                   await supabase.from("vault_accounts").delete().eq("user_id", user.id);
                   await supabase.from("vault_meta").delete().eq("user_id", user.id);
+                  disableBiometric(user.id);
+                  setBioEnrolled(false);
                   setPassphrase("");
                   setPassphraseHint(null);
                   setMode("create");
+
                 } catch (err) {
                   setNotice({ kind: "error", text: err instanceof Error ? err.message : "Reset failed." });
                 } finally {
