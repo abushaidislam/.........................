@@ -162,23 +162,34 @@ export function IconChip({ children, size = 40 }: { children: ReactNode; size?: 
 export function HeroIcon({ Icon }: { Icon: LucideIcon }) {
   const reduce = useReducedMotion();
   return (
-    <div className="relative flex items-center justify-center" style={{ width: 116, height: 116 }}>
-      {[0, 1].map((i) => (
-        <motion.div
-          key={i}
-          className="absolute rounded-full"
-          style={{ width: 74 + i * 24, height: 74 + i * 24, border: `1px solid ${BORDER}` }}
-          animate={reduce ? undefined : { scale: [1, 1.04, 1], opacity: [0.9, 0.5, 0.9] }}
-          transition={{ duration: 5 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
-        />
-      ))}
+    <div className="relative flex items-center justify-center" style={{ width: 88, height: 88 }}>
+      {/* Layered decorative frames */}
       <motion.div
-        className="relative flex h-[62px] w-[62px] items-center justify-center rounded-full"
-        style={{ background: CHARCOAL, boxShadow: INSET_SHADOW }}
-        animate={reduce ? undefined : { y: [0, -3, 0] }}
-        transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute inset-0 rounded-[18px]"
+        style={{ border: `1px solid rgba(28,28,28,0.10)` }}
+        initial={reduce ? undefined : { rotate: 0, opacity: 0 }}
+        animate={reduce ? undefined : { rotate: 6, opacity: 1 }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+      />
+      <motion.div
+        className="absolute inset-0 rounded-[18px]"
+        style={{ border: `1px solid rgba(28,28,28,0.05)` }}
+        initial={reduce ? undefined : { rotate: 0, opacity: 0 }}
+        animate={reduce ? undefined : { rotate: -3, opacity: 1 }}
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
+      />
+      {/* Main shield tile */}
+      <motion.div
+        className="relative flex h-full w-full items-center justify-center rounded-[18px]"
+        style={{
+          background: CHARCOAL,
+          boxShadow: "0 18px 40px -18px rgba(28,28,28,0.45), inset 0 1px 0 rgba(255,255,255,0.06)",
+        }}
+        initial={reduce ? undefined : { scale: 0.92, opacity: 0 }}
+        animate={reduce ? undefined : { scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Icon className="h-6 w-6" style={{ color: CREAM_SOFT }} strokeWidth={1.6} />
+        <Icon className="h-[34px] w-[34px]" style={{ color: CREAM_SOFT }} strokeWidth={1.5} />
       </motion.div>
     </div>
   );
