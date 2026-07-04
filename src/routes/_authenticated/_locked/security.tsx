@@ -116,6 +116,7 @@ function SecurityPage() {
         />
         {notice && <Notice kind={notice.kind}>{notice.text}</Notice>}
       </div>
+      <BottomTabs />
     </AegisScreen>
   );
 }
