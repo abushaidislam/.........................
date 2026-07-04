@@ -202,7 +202,8 @@ function LockPage() {
         toBytes(data.recovery_wrapped_key_iv),
       );
       setVaultKey(dek);
-      navigate({ to: safeRedirect(search.redirect), replace: true });
+      await maybeEnrollBiometric(dek);
+      routeAfterUnlock();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not unlock.";
       setNotice({
@@ -215,6 +216,32 @@ function LockPage() {
       setLoading(false);
     }
   };
+
+  const handleBiometricUnlock = async () => {
+    setNotice(null);
+    setBioBusy(true);
+    try {
+      const dek = await unlockWithBiometric(user.id);
+      setVaultKey(dek);
+      routeAfterUnlock();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Biometric unlock failed.";
+      // If the stored blob is broken (e.g. cleared), drop it so user isn't stuck.
+      if (/isn't set up|NotAllowed|InvalidState/i.test(msg)) {
+        disableBiometric(user.id);
+        setBioEnrolled(false);
+      }
+      setNotice({
+        kind: "error",
+        text: /NotAllowed/i.test(msg)
+          ? "Biometric check was cancelled."
+          : msg,
+      });
+    } finally {
+      setBioBusy(false);
+    }
+  };
+
 
   if (mode === "loading") {
     return (
