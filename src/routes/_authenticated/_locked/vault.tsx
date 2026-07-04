@@ -32,7 +32,7 @@ export const Route = createFileRoute("/_authenticated/_locked/vault")({
 
 function VaultPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  
   const { user } = Route.useRouteContext();
   const unlocked = useVaultUnlocked();
 
