@@ -347,7 +347,44 @@ function LockPage() {
               {isCreate ? "Create vault" : "Unlock"}
             </PrimaryButton>
           </div>
+
+          {!isCreate && bioEnrolled && bioAvailable && (
+            <motion.button
+              type="button"
+              onClick={handleBiometricUnlock}
+              disabled={bioBusy || loading}
+              whileTap={{ scale: 0.985, opacity: 0.9 }}
+              transition={soft}
+              className="mt-1 flex h-[44px] w-full items-center justify-center gap-2 rounded-[10px] text-[14px] disabled:opacity-60"
+              style={{
+                background: CREAM_SOFT,
+                color: CHARCOAL,
+                border: `1px solid rgba(28,28,28,0.12)`,
+                fontWeight: 500,
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+              }}
+            >
+              {bioBusy ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Fingerprint className="h-4 w-4" strokeWidth={1.8} />
+                  <span>Unlock with biometrics</span>
+                </>
+              )}
+            </motion.button>
+          )}
+
+          {isCreate && bioAvailable && isBiometricPending() && (
+            <p
+              className="pt-1 text-center text-[11.5px]"
+              style={{ color: MUTED }}
+            >
+              We'll set up Face ID / fingerprint right after your vault is created.
+            </p>
+          )}
         </form>
+
 
         {isCreate ? (
           <p className="text-center text-[11.5px] leading-snug" style={{ color: MUTED }}>
