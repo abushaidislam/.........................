@@ -61,10 +61,10 @@ function VaultPage() {
     };
   }, [unlocked]);
 
-
   return (
     <AegisScreen>
-      <BrandBar right={<AegisMenu userEmail={user.email} />} />
+      <BrandBar />
+
 
 
       <motion.div
