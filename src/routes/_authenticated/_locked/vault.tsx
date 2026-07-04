@@ -6,10 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { getVaultKey, lockVault, useActivityKeepAlive, useVaultUnlocked } from "@/lib/vault-session";
 import { listAccounts, type DecryptedAccount } from "@/lib/vault-accounts";
 import { AccountCard } from "@/components/vault/AccountCard";
-import { Shield, LogOut, Lock, Plus, Loader2 } from "lucide-react";
+import { Shield, Plus, Loader2 } from "lucide-react";
 import {
   AegisScreen,
-  BORDER,
   BrandBar,
   CHARCOAL,
   CREAM_SOFT,
@@ -23,6 +22,7 @@ import {
   PrimaryButton,
   soft,
 } from "@/components/aegis/chrome";
+import { AegisMenu } from "@/components/aegis/NavSheet";
 
 export const Route = createFileRoute("/_authenticated/_locked/vault")({
   component: VaultPage,
