@@ -812,7 +812,7 @@ function getInitialHapticsPref(reduceMotion: boolean | null): boolean {
   return !reduceMotion;
 }
 
-export default function Onboarding() {
+export default function Onboarding({ onComplete }: { onComplete?: () => void } = {}) {
   const [[step, dir], setState] = useState<[number, number]>([0, 1]);
   const thresholdArmedRef = useRef<null | "next" | "back">(null);
   const reduceMotion = useReducedMotion();
