@@ -6,6 +6,7 @@ import {
   createNewVaultKey,
   unwrapVaultKey,
   toBytes,
+  toByteaHex,
   KDF_ALGORITHM,
 } from "@/lib/vault-crypto";
 import { setVaultKey } from "@/lib/vault-session";
