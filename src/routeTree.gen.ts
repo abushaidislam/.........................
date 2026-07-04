@@ -15,6 +15,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedLockRouteImport } from './routes/_authenticated/lock'
+import { Route as AuthenticatedLockedRouteRouteImport } from './routes/_authenticated/_locked/route'
+import { Route as AuthenticatedLockedVaultRouteImport } from './routes/_authenticated/_locked/vault'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -45,48 +48,83 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLockRoute = AuthenticatedLockRouteImport.update({
+  id: '/lock',
+  path: '/lock',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLockedRouteRoute =
+  AuthenticatedLockedRouteRouteImport.update({
+    id: '/_locked',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedLockedVaultRoute =
+  AuthenticatedLockedVaultRouteImport.update({
+    id: '/vault',
+    path: '/vault',
+    getParentRoute: () => AuthenticatedLockedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/lock': typeof AuthenticatedLockRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/vault': typeof AuthenticatedLockedVaultRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/lock': typeof AuthenticatedLockRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/vault': typeof AuthenticatedLockedVaultRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/_authenticated/_locked': typeof AuthenticatedLockedRouteRouteWithChildren
+  '/_authenticated/lock': typeof AuthenticatedLockRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/_authenticated/_locked/vault': typeof AuthenticatedLockedVaultRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/lock'
     | '/onboarding'
     | '/auth/callback'
     | '/auth/reset-password'
+    | '/vault'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/onboarding' | '/auth/callback' | '/auth/reset-password'
+  to:
+    | '/'
+    | '/auth'
+    | '/lock'
+    | '/onboarding'
+    | '/auth/callback'
+    | '/auth/reset-password'
+    | '/vault'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/_locked'
+    | '/_authenticated/lock'
     | '/_authenticated/onboarding'
     | '/auth/callback'
     | '/auth/reset-password'
+    | '/_authenticated/_locked/vault'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -139,14 +177,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/lock': {
+      id: '/_authenticated/lock'
+      path: '/lock'
+      fullPath: '/lock'
+      preLoaderRoute: typeof AuthenticatedLockRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_locked': {
+      id: '/_authenticated/_locked'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedLockedRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/_locked/vault': {
+      id: '/_authenticated/_locked/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof AuthenticatedLockedVaultRouteImport
+      parentRoute: typeof AuthenticatedLockedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedLockedRouteRouteChildren {
+  AuthenticatedLockedVaultRoute: typeof AuthenticatedLockedVaultRoute
+}
+
+const AuthenticatedLockedRouteRouteChildren: AuthenticatedLockedRouteRouteChildren =
+  {
+    AuthenticatedLockedVaultRoute: AuthenticatedLockedVaultRoute,
+  }
+
+const AuthenticatedLockedRouteRouteWithChildren =
+  AuthenticatedLockedRouteRoute._addFileChildren(
+    AuthenticatedLockedRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedLockedRouteRoute: typeof AuthenticatedLockedRouteRouteWithChildren
+  AuthenticatedLockRoute: typeof AuthenticatedLockRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedLockedRouteRoute: AuthenticatedLockedRouteRouteWithChildren,
+  AuthenticatedLockRoute: AuthenticatedLockRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
 }
 
