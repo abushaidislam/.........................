@@ -807,3 +807,78 @@ function ScanTab({
     </div>
   );
 }
+
+function AvfPassStage({
+  passphrase,
+  onChange,
+  busy,
+  notice,
+  onSubmit,
+}: {
+  passphrase: string;
+  onChange: (v: string) => void;
+  busy: boolean;
+  notice: { kind: "error" | "info"; text: string } | null;
+  onSubmit: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4 pt-2">
+      <div className="flex flex-col gap-1.5">
+        <h1
+          className="text-[26px] leading-[1.1]"
+          style={{
+            color: CHARCOAL,
+            fontFamily: "'Sora', sans-serif",
+            fontWeight: 600,
+            letterSpacing: "-0.025em",
+          }}
+        >
+          Unlock encrypted backup
+        </h1>
+        <p className="text-[13.5px] leading-[1.4]" style={{ color: MUTED }}>
+          Enter the export passphrase you chose when creating this{" "}
+          <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>.avf</span> file. We decrypt
+          it locally — the passphrase never leaves your device.
+        </p>
+      </div>
+
+      {notice && <Notice kind={notice.kind}>{notice.text}</Notice>}
+
+      <div className="flex flex-col gap-2">
+        <SectionLabel>Export passphrase</SectionLabel>
+        <input
+          type="password"
+          autoFocus
+          value={passphrase}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && passphrase && !busy) onSubmit();
+          }}
+          placeholder="Passphrase used at export time"
+          className="w-full rounded-[14px] px-4 py-3 text-[13.5px] outline-none"
+          style={{
+            background: CREAM_SOFT,
+            border: `1px solid ${BORDER}`,
+            color: CHARCOAL,
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5)",
+          }}
+        />
+      </div>
+
+      <PrimaryButton
+        onClick={onSubmit}
+        disabled={busy || passphrase.length === 0}
+        icon={
+          busy ? (
+            <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+          ) : (
+            <KeyRound className="h-4 w-4" strokeWidth={2} />
+          )
+        }
+      >
+        {busy ? "Decrypting…" : "Unlock backup"}
+      </PrimaryButton>
+    </div>
+  );
+}
+
