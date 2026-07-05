@@ -48,7 +48,7 @@ export const Route = createFileRoute("/_authenticated/_locked/vault_/import")({
   notFoundComponent: () => <div className="p-6 text-sm">Not found</div>,
 });
 
-type Stage = "input" | "preview";
+type Stage = "input" | "avf" | "preview";
 type Tab = "scan" | "paste" | "file";
 
 interface Preview {
@@ -68,6 +68,9 @@ function ImportPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState(false);
   const [decoding, setDecoding] = useState(false);
+  const [avfPending, setAvfPending] = useState<EncryptedExportFile | null>(null);
+  const [avfPass, setAvfPass] = useState("");
+  const [avfBusy, setAvfBusy] = useState(false);
   const jsonInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
