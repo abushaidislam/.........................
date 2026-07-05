@@ -233,6 +233,16 @@ function VaultPage() {
 
       {accounts && accounts.length > 0 && <SearchField value={query} onChange={setQuery} />}
 
+      {accounts && allTags.length > 0 && (
+        <TagFilterRow
+          tags={allTags}
+          active={activeTags}
+          onToggle={toggleTagFilter}
+          onClear={() => setActiveTags(new Set())}
+          onManage={() => setTagManagerOpen(true)}
+        />
+      )}
+
       <div className="pt-2">
         {error && <Notice kind="error">{error}</Notice>}
 
@@ -254,6 +264,8 @@ function VaultPage() {
             favorites={favorites}
             onToggleFavorite={toggleFavorite}
             onDelete={handleDelete}
+            onTagsChanged={handleTagsChanged}
+            tagSuggestions={tagNames}
           />
         )}
 
@@ -262,10 +274,29 @@ function VaultPage() {
             className="mt-4 rounded-[14px] px-4 py-6 text-center text-[13px]"
             style={{ background: CREAM_SOFT, border: `1px solid ${BORDER}`, color: MUTED }}
           >
-            No account matches "{query}".
+            {activeTags.size > 0
+              ? "No account matches the current filters."
+              : `No account matches "${query}".`}
           </div>
         )}
       </div>
+
+      {tagManagerOpen && accounts && (
+        <TagManagerSheet
+          accounts={accounts}
+          onClose={() => setTagManagerOpen(false)}
+          onLocalChange={(next) => {
+            setAccounts(next);
+            setActiveTags((prev) => {
+              const remaining = new Set<string>();
+              const stillExists = new Set<string>();
+              for (const a of next) for (const t of a.tags ?? []) stillExists.add(t);
+              for (const t of prev) if (stillExists.has(t)) remaining.add(t);
+              return remaining;
+            });
+          }}
+        />
+      )}
     </>
   );
 }
