@@ -1,10 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Star } from "lucide-react";
+import { Copy, Check, Star, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { generateCode, type DecryptedAccount } from "@/lib/vault-accounts";
 import { BORDER, CHARCOAL, CREAM_SOFT, MUTED } from "@/components/aegis/chrome";
 import { logoUrlFor, domainFromIssuer } from "@/lib/issuer-domain";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const DANGER = "#b23a2a";
 const FAV = "#c99a2b";
@@ -32,6 +42,7 @@ interface Props {
   now: number;
   isFavorite?: boolean;
   onToggleFavorite?: (id: string) => void;
+  onDelete?: (id: string) => Promise<void> | void;
 }
 
 function formatCode(code: string): string {
@@ -53,9 +64,13 @@ function hueFor(seed: string): number {
   return h % 360;
 }
 
-export function AccountCard({ account, now, isFavorite, onToggleFavorite }: Props) {
+export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDelete }: Props) {
   const [copied, setCopied] = useState(false);
   const [logoFailed, setLogoFailed] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const pressTimer = useRef<number | null>(null);
+  const longPressedRef = useRef(false);
 
   const period = account.period;
   const elapsed = Math.floor(now / 1000) % period;
@@ -77,12 +92,48 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite }: Prop
   }, [copied]);
 
   const copy = async () => {
+    if (longPressedRef.current) {
+      longPressedRef.current = false;
+      return;
+    }
     try {
       await navigator.clipboard.writeText(code.replace(/\s/g, ""));
       setCopied(true);
       if (typeof navigator.vibrate === "function") navigator.vibrate(6);
     } catch {
       /* ignore */
+    }
+  };
+
+  const clearPress = () => {
+    if (pressTimer.current !== null) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
+
+  const startPress = () => {
+    if (!onDelete) return;
+    clearPress();
+    longPressedRef.current = false;
+    pressTimer.current = window.setTimeout(() => {
+      longPressedRef.current = true;
+      if (typeof navigator.vibrate === "function") navigator.vibrate(14);
+      setConfirmOpen(true);
+    }, 500);
+  };
+
+  const confirmDelete = async () => {
+    if (!onDelete) return;
+    setDeleting(true);
+    try {
+      await onDelete(account.id);
+      toast.success(`Removed ${account.issuer || "account"}`);
+      setConfirmOpen(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not delete account.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -103,8 +154,19 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite }: Prop
   }, [account.issuer, logoUrl]);
 
   return (
+    <>
     <motion.button
       onClick={copy}
+      onPointerDown={startPress}
+      onPointerUp={clearPress}
+      onPointerLeave={clearPress}
+      onPointerCancel={clearPress}
+      onContextMenu={(e) => {
+        if (!onDelete) return;
+        e.preventDefault();
+        longPressedRef.current = true;
+        setConfirmOpen(true);
+      }}
       whileTap={{ scale: 0.99, backgroundColor: "rgba(28,28,28,0.03)" }}
       className="group relative flex w-full flex-col gap-2 px-4 py-3 text-left"
       style={{ background: "transparent" }}
@@ -240,6 +302,39 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite }: Prop
         </AnimatePresence>
       </div>
     </motion.button>
+    <AlertDialog open={confirmOpen} onOpenChange={(o) => (deleting ? null : setConfirmOpen(o))}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove {account.issuer || "this account"}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            The encrypted secret will be deleted from your vault. You'll need
+            the original QR or setup key to add it back. This can't be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              confirmDelete();
+            }}
+            disabled={deleting}
+            style={{ background: DANGER, color: "#fff" }}
+          >
+            {deleting ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Removing…
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5">
+                <Trash2 className="h-3.5 w-3.5" /> Remove
+              </span>
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 

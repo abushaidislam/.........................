@@ -7,7 +7,7 @@ import {
   useActivityKeepAlive,
   useVaultUnlocked,
 } from "@/lib/vault-session";
-import { listAccounts, type DecryptedAccount } from "@/lib/vault-accounts";
+import { deleteAccount, listAccounts, type DecryptedAccount } from "@/lib/vault-accounts";
 import { loadFavorites, saveFavorites } from "@/lib/favorites";
 import { AccountCard } from "@/components/vault/AccountCard";
 import { Shield, Plus, Loader2, Search, X } from "lucide-react";
@@ -58,6 +58,18 @@ function VaultPage() {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      saveFavorites(user.id, next);
+      return next;
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteAccount(id);
+    setAccounts((prev) => (prev ? prev.filter((a) => a.id !== id) : prev));
+    setFavorites((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
       saveFavorites(user.id, next);
       return next;
     });
@@ -146,6 +158,7 @@ function VaultPage() {
                   now={now}
                   favorites={favorites}
                   onToggleFavorite={toggleFavorite}
+                  onDelete={handleDelete}
                 />
               </div>
             )}
@@ -157,6 +170,7 @@ function VaultPage() {
                   now={now}
                   favorites={favorites}
                   onToggleFavorite={toggleFavorite}
+                  onDelete={handleDelete}
                 />
               </div>
             )}
@@ -181,11 +195,13 @@ function AccountGroup({
   now,
   favorites,
   onToggleFavorite,
+  onDelete,
 }: {
   items: DecryptedAccount[];
   now: number;
   favorites: Set<string>;
   onToggleFavorite: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
 }) {
   return (
     <div
@@ -211,6 +227,7 @@ function AccountGroup({
                 now={now}
                 isFavorite={favorites.has(a.id)}
                 onToggleFavorite={onToggleFavorite}
+                onDelete={onDelete}
               />
             </motion.div>
           ))}
