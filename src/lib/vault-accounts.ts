@@ -13,6 +13,11 @@ import {
   writeVaultCache,
 } from "@/lib/vault-cache";
 import { normalizeTagList } from "@/components/vault/tags";
+import {
+  dequeueTagUpdate,
+  enqueueTagUpdate,
+  flushQueuedTagUpdates,
+} from "@/lib/vault-tag-queue";
 
 const ACCOUNT_SELECT =
   "id, issuer, label, icon_slug, algorithm, digits, period, sort_order, is_favorite, tags, secret_ciphertext, secret_iv";
