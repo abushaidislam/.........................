@@ -278,7 +278,10 @@ function ProfilePage() {
               initials(seed)
             )}
             <span
-              className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100"
+              className={
+                "absolute inset-0 flex items-center justify-center transition-opacity " +
+                (avatarBusy ? "opacity-100" : "opacity-0 group-hover:opacity-100")
+              }
               style={{ background: "rgba(28,28,28,0.55)" }}
             >
               {avatarBusy ? (
@@ -287,14 +290,6 @@ function ProfilePage() {
                 <Camera className="h-4 w-4" strokeWidth={1.8} style={{ color: CREAM_SOFT }} />
               )}
             </span>
-            {avatarBusy && !("no-hover" in {}) && (
-              <span
-                className="absolute inset-0 flex items-center justify-center"
-                style={{ background: "rgba(28,28,28,0.55)" }}
-              >
-                <Loader2 className="h-4 w-4 animate-spin" style={{ color: CREAM_SOFT }} />
-              </span>
-            )}
           </motion.button>
           <input
             ref={fileRef}
