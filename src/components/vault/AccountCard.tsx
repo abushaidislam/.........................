@@ -8,13 +8,19 @@ import {
   Trash2,
   Loader2,
   X,
-  Eye,
   EyeOff,
   ShieldCheck,
   Clock3,
+  Pencil,
+  MousePointerClick,
 } from "lucide-react";
 import { toast } from "sonner";
-import { generateCode, setAccountTags, type DecryptedAccount } from "@/lib/vault-accounts";
+import {
+  generateCode,
+  setAccountTags,
+  updateAccountDetails,
+  type DecryptedAccount,
+} from "@/lib/vault-accounts";
 import { BORDER, CHARCOAL, CREAM_SOFT, MUTED, soft } from "@/components/aegis/chrome";
 import { logoUrlFor, domainFromIssuer } from "@/lib/issuer-domain";
 import { useHideCodes } from "@/lib/vault-privacy";
@@ -148,6 +154,7 @@ interface Props {
   onToggleFavorite?: (id: string) => void;
   onDelete?: (id: string) => Promise<void> | void;
   onTagsChanged?: (id: string, tags: string[]) => void;
+  onDetailsChanged?: (id: string, patch: { issuer: string; label: string }) => void;
   allTagSuggestions?: string[];
 }
 
@@ -177,6 +184,7 @@ export function AccountCard({
   onToggleFavorite,
   onDelete,
   onTagsChanged,
+  onDetailsChanged,
   allTagSuggestions,
 }: Props) {
   const hideCodes = useHideCodes();
@@ -186,12 +194,21 @@ export function AccountCard({
   const [revealed, setRevealed] = useState(!hideCodes);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [issuerDraft, setIssuerDraft] = useState(account.issuer ?? "");
+  const [labelDraft, setLabelDraft] = useState(account.label ?? "");
+  const [detailsSaving, setDetailsSaving] = useState(false);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
   const [tagsDraft, setTagsDraft] = useState<string[]>(account.tags ?? []);
   const [tagSaving, setTagSaving] = useState(false);
   const [tagError, setTagError] = useState<string | null>(null);
   useEffect(() => {
     setTagsDraft(account.tags ?? []);
   }, [account.tags]);
+  useEffect(() => {
+    setIssuerDraft(account.issuer ?? "");
+    setLabelDraft(account.label ?? "");
+  }, [account.issuer, account.label]);
 
   const dirtyTags = useMemo(() => {
     const a = [...(account.tags ?? [])].sort();
@@ -199,6 +216,15 @@ export function AccountCard({
     if (a.length !== b.length) return true;
     return a.some((v, i) => v !== b[i]);
   }, [account.tags, tagsDraft]);
+
+  const dirtyDetails = useMemo(() => {
+    return (
+      issuerDraft.trim() !== (account.issuer ?? "").trim() ||
+      labelDraft.trim() !== (account.label ?? "").trim()
+    );
+  }, [account.issuer, account.label, issuerDraft, labelDraft]);
+
+  const canSaveEdits = (dirtyTags || dirtyDetails) && issuerDraft.trim().length > 0;
 
   const saveTags = async () => {
     if (!dirtyTags) return;
@@ -218,6 +244,50 @@ export function AccountCard({
     } finally {
       setTagSaving(false);
     }
+  };
+
+  const saveEdits = async () => {
+    if (!canSaveEdits || detailsSaving) return;
+    setDetailsSaving(true);
+    setDetailsError(null);
+    setTagError(null);
+    try {
+      if (dirtyDetails) {
+        const saved = await updateAccountDetails(account.id, {
+          issuer: issuerDraft,
+          label: labelDraft,
+        });
+        onDetailsChanged?.(account.id, saved);
+        setIssuerDraft(saved.issuer);
+        setLabelDraft(saved.label);
+      }
+      if (dirtyTags) {
+        const { tags: saved, queued } = await setAccountTags(account.id, tagsDraft);
+        onTagsChanged?.(account.id, saved);
+        setTagsDraft(saved);
+        if (queued) {
+          toast.success("Changes saved · tags will sync when back online");
+        } else {
+          toast.success("Changes saved");
+        }
+      } else {
+        toast.success("Changes saved");
+      }
+      setEditing(false);
+    } catch (e) {
+      setDetailsError(e instanceof Error ? e.message : "Could not save changes.");
+    } finally {
+      setDetailsSaving(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setIssuerDraft(account.issuer ?? "");
+    setLabelDraft(account.label ?? "");
+    setTagsDraft(account.tags ?? []);
+    setDetailsError(null);
+    setTagError(null);
+    setEditing(false);
   };
 
   const pressTimer = useRef<number | null>(null);
@@ -301,7 +371,11 @@ export function AccountCard({
 
   // Keep the modal's reveal state honest as the pref changes while closed.
   useEffect(() => {
-    if (!detailsOpen) setRevealed(!hideCodes);
+    if (!detailsOpen) {
+      setRevealed(!hideCodes);
+      setEditing(false);
+      setDetailsError(null);
+    }
   }, [hideCodes, detailsOpen]);
 
   const openDelete = () => {
@@ -634,24 +708,59 @@ export function AccountCard({
                             letterSpacing: "0.25em",
                           }}
                         >
-                          Current code
+                          {editing ? "Editing account" : "Current code"}
                         </div>
-                        <div
-                          id={detailsTitleId}
-                          className="truncate text-[17px]"
-                          style={{
-                            fontFamily: "'Playfair Display', serif",
-                            fontWeight: 600,
-                            letterSpacing: "-0.01em",
-                            color: CHARCOAL,
-                          }}
-                        >
-                          {account.issuer || "Untitled"}
-                        </div>
-                        {account.label && (
-                          <div className="truncate text-[11.5px]" style={{ color: MUTED }}>
-                            {account.label}
+                        {editing ? (
+                          <div className="mt-1 flex flex-col gap-1.5">
+                            <input
+                              id={detailsTitleId}
+                              value={issuerDraft}
+                              onChange={(e) => setIssuerDraft(e.target.value)}
+                              placeholder="Service (e.g. Google)"
+                              maxLength={80}
+                              autoFocus
+                              className="w-full rounded-[10px] px-2.5 py-1.5 text-[15px] outline-none transition-colors focus:border-current"
+                              style={{
+                                background: "#fff",
+                                border: `1px solid ${BORDER}`,
+                                color: CHARCOAL,
+                                fontWeight: 600,
+                                letterSpacing: "-0.005em",
+                              }}
+                            />
+                            <input
+                              value={labelDraft}
+                              onChange={(e) => setLabelDraft(e.target.value)}
+                              placeholder="Account (e.g. you@email.com)"
+                              maxLength={120}
+                              className="w-full rounded-[10px] px-2.5 py-1 text-[12px] outline-none"
+                              style={{
+                                background: "#fff",
+                                border: `1px solid ${BORDER}`,
+                                color: CHARCOAL,
+                              }}
+                            />
                           </div>
+                        ) : (
+                          <>
+                            <div
+                              id={detailsTitleId}
+                              className="truncate text-[17px]"
+                              style={{
+                                fontFamily: "'Playfair Display', serif",
+                                fontWeight: 600,
+                                letterSpacing: "-0.01em",
+                                color: CHARCOAL,
+                              }}
+                            >
+                              {account.issuer || "Untitled"}
+                            </div>
+                            {account.label && (
+                              <div className="truncate text-[11.5px]" style={{ color: MUTED }}>
+                                {account.label}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                       {onToggleFavorite && (
@@ -749,13 +858,19 @@ export function AccountCard({
                       <RingTimer progress={progress} remaining={remaining} warn={warn} />
                     </div>
 
-                    {/* Code display (revealed or dotted) */}
-                    <motion.div
-                      className="relative mb-2 flex flex-col items-center gap-1.5 overflow-hidden rounded-[16px] py-5"
+                    {/* Code display (revealed or dotted) — tap to toggle */}
+                    <motion.button
+                      type="button"
+                      onClick={() => setRevealed((v) => !v)}
+                      whileTap={{ scale: 0.995 }}
+                      aria-label={revealed ? "Hide code" : "Reveal code"}
+                      aria-pressed={revealed}
+                      className="relative mb-2 flex w-full flex-col items-center gap-1.5 overflow-hidden rounded-[16px] py-5 outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-offset-1"
                       style={{
                         background: "#fff",
                         border: `1px solid ${BORDER}`,
                         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                        cursor: "pointer",
                       }}
                     >
                       <AnimatePresence>
@@ -837,69 +952,85 @@ export function AccountCard({
                           </motion.div>
                         )}
                       </AnimatePresence>
-                    </motion.div>
 
-                    {/* Copy primary */}
-                    <motion.button
-                      whileTap={{ scale: 0.99 }}
-                      onClick={copyFromSheet}
-                      className="mb-3 flex w-full items-center justify-center gap-2 rounded-[14px] px-4 py-3.5 text-[14px]"
-                      style={{
-                        background: CHARCOAL,
-                        color: CREAM_SOFT,
-                        fontWeight: 600,
-                        letterSpacing: "-0.005em",
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-                      }}
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="h-4 w-4" strokeWidth={2.2} />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4" strokeWidth={1.9} />
-                          Copy code
-                        </>
-                      )}
-                    </motion.button>
-
-                    {/* Next code preview */}
-                    <div
-                      className="mb-3 flex items-center gap-3 rounded-[14px] px-4 py-3"
-                      style={{
-                        background: "#fff",
-                        border: `1px solid ${BORDER}`,
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-                      }}
-                    >
-                      <Clock3
-                        className="h-4 w-4 shrink-0"
-                        strokeWidth={1.7}
-                        style={{ color: MUTED }}
-                      />
-                      <div className="flex flex-1 flex-col leading-tight">
-                        <span className="text-[13px]" style={{ color: CHARCOAL, fontWeight: 600 }}>
-                          Next code
-                        </span>
-                        <span className="text-[11px]" style={{ color: MUTED }}>
-                          Auto-generated
-                        </span>
-                      </div>
                       <span
-                        className="tabular-nums text-[13px]"
+                        className="mt-1 inline-flex items-center gap-1 text-[10px]"
                         style={{
-                          color: revealed || warn ? CHARCOAL : MUTED,
+                          color: MUTED,
                           fontFamily: "'JetBrains Mono', monospace",
-                          fontFeatureSettings: "'tnum'",
-                          letterSpacing: "0.12em",
-                          fontWeight: 600,
+                          letterSpacing: "0.14em",
                         }}
                       >
-                        {revealed && nextCode ? formatCode(nextCode) : "• • •  • • •"}
+                        <MousePointerClick className="h-3 w-3" strokeWidth={1.7} />
+                        {revealed ? "TAP TO HIDE" : "TAP TO REVEAL"}
                       </span>
-                    </div>
+                    </motion.button>
+
+                    {/* Copy primary — hidden in edit mode */}
+                    {!editing && (
+                      <motion.button
+                        whileTap={{ scale: 0.99 }}
+                        onClick={copyFromSheet}
+                        className="mb-3 flex w-full items-center justify-center gap-2 rounded-[14px] px-4 py-3.5 text-[14px]"
+                        style={{
+                          background: CHARCOAL,
+                          color: CREAM_SOFT,
+                          fontWeight: 600,
+                          letterSpacing: "-0.005em",
+                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+                        }}
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="h-4 w-4" strokeWidth={2.2} />
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4" strokeWidth={1.9} />
+                            Copy code
+                          </>
+                        )}
+                      </motion.button>
+                    )}
+
+                    {/* Next code preview — hidden in edit mode */}
+                    {!editing && (
+                      <div
+                        className="mb-3 flex items-center gap-3 rounded-[14px] px-4 py-3"
+                        style={{
+                          background: "#fff",
+                          border: `1px solid ${BORDER}`,
+                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                        }}
+                      >
+                        <Clock3
+                          className="h-4 w-4 shrink-0"
+                          strokeWidth={1.7}
+                          style={{ color: MUTED }}
+                        />
+                        <div className="flex flex-1 flex-col leading-tight">
+                          <span className="text-[13px]" style={{ color: CHARCOAL, fontWeight: 600 }}>
+                            Next code
+                          </span>
+                          <span className="text-[11px]" style={{ color: MUTED }}>
+                            Auto-generated
+                          </span>
+                        </div>
+                        <span
+                          className="tabular-nums text-[13px]"
+                          style={{
+                            color: revealed || warn ? CHARCOAL : MUTED,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontFeatureSettings: "'tnum'",
+                            letterSpacing: "0.12em",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {revealed && nextCode ? formatCode(nextCode) : "• • •  • • •"}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Tags editor */}
                     <div
@@ -935,7 +1066,7 @@ export function AccountCard({
                             </span>
                           )}
                         </div>
-                        {dirtyTags && (
+                        {!editing && dirtyTags && (
                           <button
                             type="button"
                             onClick={saveTags}
@@ -958,85 +1089,165 @@ export function AccountCard({
                           {tagError}
                         </p>
                       )}
-
                     </div>
 
-                    {/* Meta trio */}
-                    <div className="mb-3 grid grid-cols-3 gap-2">
-                      <MetaCell label="Algorithm" value={account.algorithm} />
-                      <MetaCell label="Digits" value={String(account.digits)} />
-                      <MetaCell label="Period" value={`${account.period}s`} />
-                    </div>
-
-                    {/* Storage note */}
-                    <div
-                      className="mb-4 flex items-start gap-3 rounded-[14px] px-4 py-3"
-                      style={{
-                        background: "rgba(28,28,28,0.03)",
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <ShieldCheck
-                        className="mt-0.5 h-4 w-4 shrink-0"
-                        strokeWidth={1.7}
-                        style={{ color: CHARCOAL }}
-                      />
-                      <div className="flex flex-col gap-0.5">
-                        <span
-                          className="text-[12.5px]"
-                          style={{ color: CHARCOAL, fontWeight: 600 }}
-                        >
-                          Stored on this device
-                        </span>
-                        <span className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
-                          Secret stays inside your encrypted vault. Use Security → Export for a
-                          portable backup.
-                        </span>
+                    {/* Meta trio — hidden in edit mode */}
+                    {!editing && (
+                      <div className="mb-3 grid grid-cols-3 gap-2">
+                        <MetaCell label="Algorithm" value={account.algorithm} />
+                        <MetaCell label="Digits" value={String(account.digits)} />
+                        <MetaCell label="Period" value={`${account.period}s`} />
                       </div>
-                    </div>
+                    )}
 
-                    {/* Action row: Reveal + Remove */}
-                    <div className="grid grid-cols-2 gap-2 pb-1">
-                      <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setRevealed((v) => !v)}
-                        className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px]"
+                    {/* Storage note — hidden in edit mode */}
+                    {!editing && (
+                      <div
+                        className="mb-4 flex items-start gap-3 rounded-[14px] px-4 py-3"
                         style={{
-                          background: "#fff",
-                          color: CHARCOAL,
+                          background: "rgba(28,28,28,0.03)",
                           border: `1px solid ${BORDER}`,
-                          fontWeight: 600,
-                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
                         }}
                       >
-                        {revealed ? (
-                          <>
-                            <EyeOff className="h-4 w-4" strokeWidth={1.8} />
-                            Hide
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="h-4 w-4" strokeWidth={1.8} />
-                            Reveal
-                          </>
-                        )}
-                      </motion.button>
-                      <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={openDelete}
-                        disabled={!onDelete}
-                        className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-50"
+                        <ShieldCheck
+                          className="mt-0.5 h-4 w-4 shrink-0"
+                          strokeWidth={1.7}
+                          style={{ color: CHARCOAL }}
+                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className="text-[12.5px]"
+                            style={{ color: CHARCOAL, fontWeight: 600 }}
+                          >
+                            Stored on this device
+                          </span>
+                          <span className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
+                            Secret stays inside your encrypted vault. Use Security → Export for a
+                            portable backup.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Edit-mode hint */}
+                    {editing && (
+                      <div
+                        className="mb-4 flex items-start gap-3 rounded-[14px] px-4 py-3"
                         style={{
-                          background: "rgba(178,58,42,0.06)",
-                          color: DANGER,
-                          border: `1px solid rgba(178,58,42,0.25)`,
-                          fontWeight: 600,
+                          background: "rgba(28,28,28,0.03)",
+                          border: `1px dashed ${BORDER}`,
                         }}
                       >
-                        <Trash2 className="h-4 w-4" strokeWidth={1.9} />
-                        Remove
-                      </motion.button>
-                    </div>
+                        <Pencil
+                          className="mt-0.5 h-4 w-4 shrink-0"
+                          strokeWidth={1.8}
+                          style={{ color: CHARCOAL }}
+                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className="text-[12.5px]"
+                            style={{ color: CHARCOAL, fontWeight: 600 }}
+                          >
+                            Editing account & tags
+                          </span>
+                          <span className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
+                            Service name and label update instantly. The TOTP secret is never
+                            changed here.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {detailsError && (
+                      <p
+                        className="mb-2 text-[12px]"
+                        style={{ color: DANGER }}
+                        role="alert"
+                      >
+                        {detailsError}
+                      </p>
+                    )}
+
+                    {/* Action row */}
+                    {editing ? (
+                      <div className="grid grid-cols-[1fr_auto] gap-2 pb-1">
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={saveEdits}
+                          disabled={!canSaveEdits || detailsSaving}
+                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-55"
+                          style={{
+                            background: CHARCOAL,
+                            color: CREAM_SOFT,
+                            fontWeight: 600,
+                            letterSpacing: "-0.005em",
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+                          }}
+                        >
+                          {detailsSaving ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+                              Saving…
+                            </>
+                          ) : (
+                            <>
+                              <Check className="h-4 w-4" strokeWidth={2.1} />
+                              Save changes
+                            </>
+                          )}
+                        </motion.button>
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={cancelEdit}
+                          disabled={detailsSaving}
+                          className="flex items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-[13px]"
+                          style={{
+                            background: "#fff",
+                            color: CHARCOAL,
+                            border: `1px solid ${BORDER}`,
+                            fontWeight: 600,
+                          }}
+                        >
+                          Cancel
+                        </motion.button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2 pb-1">
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            setEditing(true);
+                            setDetailsError(null);
+                          }}
+                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px]"
+                          style={{
+                            background: "#fff",
+                            color: CHARCOAL,
+                            border: `1px solid ${BORDER}`,
+                            fontWeight: 600,
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" strokeWidth={1.9} />
+                          Edit
+                        </motion.button>
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={openDelete}
+                          disabled={!onDelete}
+                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-50"
+                          style={{
+                            background: "rgba(178,58,42,0.06)",
+                            color: DANGER,
+                            border: `1px solid rgba(178,58,42,0.25)`,
+                            fontWeight: 600,
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" strokeWidth={1.9} />
+                          Remove
+                        </motion.button>
+                      </div>
+                    )}
 
                     {/* Close */}
                     <motion.button

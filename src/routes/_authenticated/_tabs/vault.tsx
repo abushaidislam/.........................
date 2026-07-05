@@ -104,6 +104,19 @@ function VaultPage() {
     setPendingTagCount(listQueuedTagUpdates().length);
   }, []);
 
+  const handleDetailsChanged = useCallback(
+    (id: string, patch: { issuer: string; label: string }) => {
+      setAccounts((prev) =>
+        prev
+          ? prev.map((a) =>
+              a.id === id ? { ...a, issuer: patch.issuer, label: patch.label } : a,
+            )
+          : prev,
+      );
+    },
+    [],
+  );
+
 
   const favorites = useMemo(() => {
     const s = new Set<string>();
@@ -362,6 +375,7 @@ function VaultPage() {
             onToggleFavorite={toggleFavorite}
             onDelete={handleDelete}
             onTagsChanged={handleTagsChanged}
+            onDetailsChanged={handleDetailsChanged}
             tagSuggestions={tagNames}
           />
         )}
@@ -406,6 +420,7 @@ function UnifiedAccountList({
   onToggleFavorite,
   onDelete,
   onTagsChanged,
+  onDetailsChanged,
   tagSuggestions,
 }: {
   favoriteList: DecryptedAccount[];
@@ -415,6 +430,7 @@ function UnifiedAccountList({
   onToggleFavorite: (id: string) => void;
   onDelete: (id: string) => Promise<void>;
   onTagsChanged: (id: string, tags: string[]) => void;
+  onDetailsChanged: (id: string, patch: { issuer: string; label: string }) => void;
   tagSuggestions: string[];
 }) {
   const showBothLabels = favoriteList.length > 0 && otherList.length > 0;
@@ -458,6 +474,7 @@ function UnifiedAccountList({
                   onToggleFavorite={onToggleFavorite}
                   onDelete={onDelete}
                   onTagsChanged={onTagsChanged}
+                  onDetailsChanged={onDetailsChanged}
                   allTagSuggestions={tagSuggestions}
                 />
                 {isLastFav && showBothLabels && (
