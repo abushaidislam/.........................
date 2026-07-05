@@ -12,7 +12,10 @@ import {
   Check,
   X,
   FileText,
+  EyeOff,
 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { setHideCodes, useHideCodes } from "@/lib/vault-privacy";
 import {
   BORDER,
   CHARCOAL,
@@ -72,6 +75,7 @@ function SecurityPage() {
   const navigate = useNavigate();
   const { user } = Route.useRouteContext();
   const autoLockMs = useAutoLockMs();
+  const hideCodes = useHideCodes();
   const [hint, setHint] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ kind: "error" | "info"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -185,6 +189,41 @@ function SecurityPage() {
             description="Printable backup — accounts list + wrapped key QR"
             onClick={() => navigate({ to: "/vault/recovery" })}
             chevron
+          />
+        </SettingsGroup>
+
+        <SectionLabel>Privacy</SectionLabel>
+        <SettingsGroup>
+          <SettingsRow
+            icon={<EyeOff className="h-4 w-4" strokeWidth={1.8} />}
+            title="Hide codes"
+            description={
+              hideCodes
+                ? "Codes stay masked. Tap an account to reveal or copy."
+                : "Codes are visible in the vault at a glance."
+            }
+            onClick={() => {
+              const next = !hideCodes;
+              setHideCodes(next);
+              setNotice({
+                kind: "info",
+                text: next ? "Codes are now hidden by default." : "Codes are now visible.",
+              });
+            }}
+            trailing={
+              <Switch
+                checked={hideCodes}
+                onCheckedChange={(v) => {
+                  setHideCodes(v);
+                  setNotice({
+                    kind: "info",
+                    text: v ? "Codes are now hidden by default." : "Codes are now visible.",
+                  });
+                }}
+                onClick={(e) => e.stopPropagation()}
+                aria-label="Hide codes by default"
+              />
+            }
           />
         </SettingsGroup>
 

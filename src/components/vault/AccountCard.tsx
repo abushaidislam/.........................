@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { generateCode, type DecryptedAccount } from "@/lib/vault-accounts";
 import { BORDER, CHARCOAL, CREAM_SOFT, MUTED, soft } from "@/components/aegis/chrome";
 import { logoUrlFor, domainFromIssuer } from "@/lib/issuer-domain";
+import { useHideCodes } from "@/lib/vault-privacy";
 
 const DANGER = "#b23a2a";
 const FAV = "#c99a2b";
@@ -167,10 +168,11 @@ function hueFor(seed: string): number {
 }
 
 export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDelete }: Props) {
+  const hideCodes = useHideCodes();
   const [copied, setCopied] = useState(false);
   const [logoFailed, setLogoFailed] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(!hideCodes);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const pressTimer = useRef<number | null>(null);
@@ -246,10 +248,16 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
     pressTimer.current = window.setTimeout(() => {
       longPressedRef.current = true;
       if (typeof navigator.vibrate === "function") navigator.vibrate(14);
-      setRevealed(false);
+      // Modal opens in the user's default privacy state.
+      setRevealed(!hideCodes);
       setDetailsOpen(true);
     }, 500);
   };
+
+  // Keep the modal's reveal state honest as the pref changes while closed.
+  useEffect(() => {
+    if (!detailsOpen) setRevealed(!hideCodes);
+  }, [hideCodes, detailsOpen]);
 
   const openDelete = () => {
     setDetailsOpen(false);
@@ -311,7 +319,7 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
       onContextMenu={(e) => {
         e.preventDefault();
         longPressedRef.current = true;
-        setRevealed(false);
+        setRevealed(!hideCodes);
         setDetailsOpen(true);
       }}
       whileTap={{ scale: 0.99, backgroundColor: "rgba(28,28,28,0.03)" }}
@@ -397,23 +405,44 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
 
       <div className="flex items-baseline justify-between gap-3 pl-[52px]">
         <AnimatePresence mode="popLayout" initial={false}>
-          <motion.div
-            key={code}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18 }}
-            className="text-[26px] leading-none tabular-nums"
-            style={{
-              color: warn ? DANGER : CHARCOAL,
-              fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-              fontFeatureSettings: "'tnum'",
-              fontWeight: 600,
-              letterSpacing: "0.06em",
-            }}
-          >
-            {formatCode(code)}
-          </motion.div>
+          {hideCodes ? (
+            <motion.div
+              key="masked"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.18 }}
+              className="flex items-center gap-2 text-[26px] leading-none tabular-nums"
+              style={{
+                color: MUTED,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontWeight: 600,
+                letterSpacing: "0.32em",
+              }}
+              aria-label="Code hidden"
+            >
+              <EyeOff className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+              <span>• • •&nbsp;&nbsp;• • •</span>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={code}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.18 }}
+              className="text-[26px] leading-none tabular-nums"
+              style={{
+                color: warn ? DANGER : CHARCOAL,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFeatureSettings: "'tnum'",
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+              }}
+            >
+              {formatCode(code)}
+            </motion.div>
+          )}
         </AnimatePresence>
 
         <AnimatePresence mode="wait" initial={false}>
@@ -434,7 +463,7 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
               <Check className="h-3 w-3" strokeWidth={2.4} />
               Copied
             </motion.div>
-          ) : showNext && nextCode ? (
+          ) : !hideCodes && showNext && nextCode ? (
             <motion.div
               key="next"
               initial={{ opacity: 0, y: 2 }}

@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { initAutoLockForUser, useActivityKeepAlive } from "@/lib/vault-session";
+import { initHideCodesForUser } from "@/lib/vault-privacy";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -20,6 +21,7 @@ function AuthenticatedShell() {
   useActivityKeepAlive();
   useEffect(() => {
     initAutoLockForUser(user.id);
+    initHideCodesForUser(user.id);
   }, [user.id]);
   return <Outlet />;
 }
