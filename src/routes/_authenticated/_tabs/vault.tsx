@@ -101,6 +101,7 @@ function VaultPage() {
       // Drop filters that no longer match any account after the edit.
       return prev;
     });
+    setPendingTagCount(listQueuedTagUpdates().length);
   }, []);
 
 
