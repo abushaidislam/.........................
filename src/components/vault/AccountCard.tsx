@@ -27,6 +27,36 @@ function notifyLogoIssue(issuer: string, reason: "unmapped" | "error") {
   }
 }
 
+// Singleton clipboard-clear timer: last copied code wins. After 30s we
+// overwrite the clipboard so a forgotten copy doesn't linger.
+const CLIPBOARD_CLEAR_MS = 30_000;
+let clipboardClearTimer: number | null = null;
+let lastCopiedPlain: string | null = null;
+
+function scheduleClipboardClear(plain: string) {
+  if (typeof window === "undefined") return;
+  lastCopiedPlain = plain;
+  if (clipboardClearTimer !== null) window.clearTimeout(clipboardClearTimer);
+  clipboardClearTimer = window.setTimeout(async () => {
+    clipboardClearTimer = null;
+    try {
+      // Only clear if we can confirm the clipboard still holds our code —
+      // otherwise we'd wipe whatever the user copied afterwards.
+      const current = await navigator.clipboard.readText().catch(() => null);
+      if (current !== null && current === lastCopiedPlain) {
+        await navigator.clipboard.writeText("");
+      } else if (current === null) {
+        // Permission denied for read: overwrite defensively.
+        await navigator.clipboard.writeText("");
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      lastCopiedPlain = null;
+    }
+  }, CLIPBOARD_CLEAR_MS);
+}
+
 interface Props {
   account: DecryptedAccount;
   now: number;
@@ -75,6 +105,18 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
     }
   }, [account, now]);
 
+  // Peek at the next code in the last few seconds so the user can wait
+  // for a fresh one instead of copying a code about to expire.
+  const showNext = remaining <= 5;
+  const nextCode = useMemo(() => {
+    if (!showNext) return "";
+    try {
+      return generateCode(account, now + period * 1000);
+    } catch {
+      return "";
+    }
+  }, [account, now, period, showNext]);
+
   useEffect(() => {
     if (!copied) return;
     const t = setTimeout(() => setCopied(false), 1200);
@@ -87,7 +129,9 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
       return;
     }
     try {
-      await navigator.clipboard.writeText(code.replace(/\s/g, ""));
+      const plain = code.replace(/\s/g, "");
+      await navigator.clipboard.writeText(plain);
+      scheduleClipboardClear(plain);
       setCopied(true);
       if (typeof navigator.vibrate === "function") navigator.vibrate(6);
     } catch {
@@ -276,6 +320,26 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
             >
               <Check className="h-3 w-3" strokeWidth={2.4} />
               Copied
+            </motion.div>
+          ) : showNext && nextCode ? (
+            <motion.div
+              key="next"
+              initial={{ opacity: 0, y: 2 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              className="flex items-baseline gap-1.5 tabular-nums"
+              style={{
+                color: MUTED,
+                fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+                fontFeatureSettings: "'tnum'",
+                fontSize: 11,
+                letterSpacing: "0.05em",
+              }}
+              aria-label={`Next code ${nextCode}`}
+            >
+              <span style={{ opacity: 0.7 }}>next</span>
+              <span style={{ color: CHARCOAL, fontWeight: 600 }}>{formatCode(nextCode)}</span>
             </motion.div>
           ) : (
             <motion.div
