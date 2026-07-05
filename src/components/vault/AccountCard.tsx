@@ -897,6 +897,55 @@ export function AccountCard({
                       </span>
                     </div>
 
+                    {/* Tags editor */}
+                    <div
+                      className="mb-3 rounded-[14px] px-4 py-3"
+                      style={{
+                        background: "#fff",
+                        border: `1px solid ${BORDER}`,
+                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                      }}
+                    >
+                      <div className="mb-2 flex items-center justify-between">
+                        <span
+                          className="text-[9.5px] uppercase"
+                          style={{
+                            color: MUTED,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            letterSpacing: "0.22em",
+                          }}
+                        >
+                          Tags
+                        </span>
+                        {dirtyTags && (
+                          <button
+                            type="button"
+                            onClick={saveTags}
+                            disabled={tagSaving}
+                            className="rounded-full px-2.5 py-1 text-[11px] disabled:opacity-60"
+                            style={{
+                              background: CHARCOAL,
+                              color: CREAM_SOFT,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {tagSaving ? "Saving…" : "Save"}
+                          </button>
+                        )}
+                      </div>
+                      <TagInput
+                        value={tagsDraft}
+                        onChange={setTagsDraft}
+                        placeholder="Add tag, press Enter"
+                        suggestions={allTagSuggestions}
+                      />
+                      {tagError && (
+                        <p className="mt-1.5 text-[11px]" style={{ color: DANGER }}>
+                          {tagError}
+                        </p>
+                      )}
+                    </div>
+
                     {/* Meta trio */}
                     <div className="mb-3 grid grid-cols-3 gap-2">
                       <MetaCell label="Algorithm" value={account.algorithm} />
