@@ -104,6 +104,19 @@ function VaultPage() {
     setPendingTagCount(listQueuedTagUpdates().length);
   }, []);
 
+  const handleDetailsChanged = useCallback(
+    (id: string, patch: { issuer: string; label: string }) => {
+      setAccounts((prev) =>
+        prev
+          ? prev.map((a) =>
+              a.id === id ? { ...a, issuer: patch.issuer, label: patch.label } : a,
+            )
+          : prev,
+      );
+    },
+    [],
+  );
+
 
   const favorites = useMemo(() => {
     const s = new Set<string>();
