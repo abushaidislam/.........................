@@ -33,7 +33,7 @@ function hueFor(seed: string): number {
   return h % 360;
 }
 
-export function AccountCard({ account, now }: Props) {
+export function AccountCard({ account, now, isFavorite, onToggleFavorite }: Props) {
   const [copied, setCopied] = useState(false);
 
   const period = account.period;
