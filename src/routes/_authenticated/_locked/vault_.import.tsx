@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BrowserQRCodeReader } from "@zxing/browser";
+import { BrowserQRCodeReader, type IScannerControls } from "@zxing/browser";
 import {
   ArrowLeft,
   ClipboardPaste,
@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   Circle,
   DownloadCloud,
+  ScanLine,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getVaultKey } from "@/lib/vault-session";
@@ -50,7 +52,7 @@ export const Route = createFileRoute("/_authenticated/_locked/vault_/import")({
 });
 
 type Stage = "input" | "preview";
-type Tab = "paste" | "file";
+type Tab = "scan" | "paste" | "file";
 
 interface Preview {
   source: ImportSource;
