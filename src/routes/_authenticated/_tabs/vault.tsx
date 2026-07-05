@@ -9,11 +9,16 @@ import {
 } from "@/lib/vault-session";
 import {
   deleteAccount,
+  flushPendingTagUpdates,
   listAccountsWithCache,
   setAccountFavorite,
   setAccountTags,
   type DecryptedAccount,
 } from "@/lib/vault-accounts";
+import {
+  hasQueuedTagUpdates,
+  listQueuedTagUpdates,
+} from "@/lib/vault-tag-queue";
 import { useOnlineStatus } from "@/lib/use-online";
 import { AccountCard } from "@/components/vault/AccountCard";
 import { TagChip } from "@/components/vault/tags";
