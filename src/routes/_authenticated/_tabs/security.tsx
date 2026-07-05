@@ -241,6 +241,13 @@ function SecurityPage() {
             onClick={() => navigate({ to: "/vault/recovery" })}
             chevron
           />
+          <SettingsRow
+            icon={<Download className="h-4 w-4" strokeWidth={1.8} />}
+            title="Encrypted export"
+            description="Download a passphrase-protected .avf backup file"
+            onClick={() => setExportOpen(true)}
+            chevron
+          />
         </SettingsGroup>
 
         <SectionLabel>Sign-in</SectionLabel>
