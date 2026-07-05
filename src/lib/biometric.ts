@@ -330,11 +330,41 @@ export async function unlockWithBiometric(userId: string): Promise<CryptoKey> {
 
 /* ---------------- disable / reset ---------------- */
 
-export function disableBiometric(userId: string): void {
-  try {
-    window.localStorage.removeItem(BIO_STORAGE_PREFIX + userId);
-    window.localStorage.removeItem(BIO_LEGACY_PREFIX + userId);
-  } catch {
-    /* ignore */
+/**
+ * Remove biometric enrollment for this user on this device. Returns a
+ * verification result so callers can surface an accurate success/failure
+ * message instead of assuming removal worked.
+ */
+export function disableBiometric(userId: string): { removed: boolean; error?: string } {
+  if (typeof window === "undefined") {
+    return { removed: false, error: "Storage isn't available in this context." };
   }
+  const primaryKey = BIO_STORAGE_PREFIX + userId;
+  const legacyKey = BIO_LEGACY_PREFIX + userId;
+  const hadAny =
+    window.localStorage.getItem(primaryKey) !== null ||
+    window.localStorage.getItem(legacyKey) !== null;
+
+  try {
+    window.localStorage.removeItem(primaryKey);
+    window.localStorage.removeItem(legacyKey);
+  } catch (err) {
+    return {
+      removed: false,
+      error: err instanceof Error ? err.message : "Storage rejected the write.",
+    };
+  }
+
+  // Verify: re-read localStorage. If either key still exists, storage
+  // silently rejected the delete (rare — private mode, quota, extensions).
+  const stillThere =
+    window.localStorage.getItem(primaryKey) !== null ||
+    window.localStorage.getItem(legacyKey) !== null;
+  if (stillThere) {
+    return { removed: false, error: "Device storage still reports the credential." };
+  }
+
+  // hadAny=false means it was already gone — still a successful end state.
+  return { removed: true, error: hadAny ? undefined : "No enrollment was present." };
 }
+
