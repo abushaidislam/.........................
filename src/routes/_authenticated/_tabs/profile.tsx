@@ -1,10 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lockVault } from "@/lib/vault-session";
-import { User, Mail, Loader2, LogOut, Check, Pencil } from "lucide-react";
+import { deleteMyAccount } from "@/lib/account.functions";
+import { User, Mail, Loader2, LogOut, Check, Pencil, Trash2 } from "lucide-react";
 import {
   BORDER,
   CHARCOAL,
