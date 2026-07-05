@@ -62,14 +62,18 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
   const [notice, setNotice] = useState<{ kind: "error" | "info"; text: string } | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name")
+        .select("display_name, avatar_url")
         .eq("id", user.id)
         .maybeSingle();
       if (cancelled) return;
@@ -78,6 +82,7 @@ function ProfilePage() {
         const v = data?.display_name ?? "";
         setDisplayName(v);
         setInitialName(v);
+        setAvatarPath(data?.avatar_url ?? null);
       }
       setLoading(false);
     })();
@@ -85,6 +90,27 @@ function ProfilePage() {
       cancelled = true;
     };
   }, [user.id]);
+
+  // Refresh the signed URL whenever the stored path changes. Signed URLs
+  // are the read path because the avatars bucket is private.
+  useEffect(() => {
+    let cancelled = false;
+    if (!avatarPath) {
+      setAvatarUrl(null);
+      return;
+    }
+    (async () => {
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .createSignedUrl(avatarPath, 60 * 60);
+      if (cancelled) return;
+      if (error) setAvatarUrl(null);
+      else setAvatarUrl(data.signedUrl);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [avatarPath]);
 
   const save = async () => {
     setSaving(true);
