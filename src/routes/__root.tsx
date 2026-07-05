@@ -98,6 +98,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Aegis is a beautifully minimal authenticator that protects every account with secure one-time codes.",
       },
+      { property: "og:site_name", content: "Aegis" },
+      { property: "og:url", content: "https://hug-machine-maker.lovable.app/" },
       {
         property: "og:image",
         content:
@@ -111,6 +113,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "canonical", href: "https://hug-machine-maker.lovable.app/" },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
       { rel: "manifest", href: "/manifest.webmanifest" },
@@ -119,6 +122,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Playfair+Display:wght@500;600;700&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Aegis",
+          applicationCategory: "SecurityApplication",
+          operatingSystem: "Web",
+          description:
+            "Zero-knowledge, end-to-end encrypted TOTP authenticator. Your passphrase never leaves your device.",
+          url: "https://hug-machine-maker.lovable.app/",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        }),
       },
     ],
   }),
