@@ -248,10 +248,16 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
     pressTimer.current = window.setTimeout(() => {
       longPressedRef.current = true;
       if (typeof navigator.vibrate === "function") navigator.vibrate(14);
-      setRevealed(false);
+      // Modal opens in the user's default privacy state.
+      setRevealed(!hideCodes);
       setDetailsOpen(true);
     }, 500);
   };
+
+  // Keep the modal's reveal state honest as the pref changes while closed.
+  useEffect(() => {
+    if (!detailsOpen) setRevealed(!hideCodes);
+  }, [hideCodes, detailsOpen]);
 
   const openDelete = () => {
     setDetailsOpen(false);
