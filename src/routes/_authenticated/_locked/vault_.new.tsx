@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { IScannerControls } from "@zxing/browser";
 import { getVaultKey } from "@/lib/vault-session";
+import { useOnlineStatus } from "@/lib/use-online";
 import {
   addAccount,
   isValidBase32Secret,
@@ -18,6 +19,7 @@ import {
   ChevronDown,
   KeyRound,
   ImageUp,
+  WifiOff,
 } from "lucide-react";
 import {
   AegisScreen,
