@@ -228,10 +228,10 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
       onPointerLeave={clearPress}
       onPointerCancel={clearPress}
       onContextMenu={(e) => {
-        if (!onDelete) return;
         e.preventDefault();
         longPressedRef.current = true;
-        setConfirmOpen(true);
+        setRevealed(false);
+        setDetailsOpen(true);
       }}
       whileTap={{ scale: 0.99, backgroundColor: "rgba(28,28,28,0.03)" }}
       className="group relative flex w-full flex-col gap-2 px-4 py-3 text-left"
