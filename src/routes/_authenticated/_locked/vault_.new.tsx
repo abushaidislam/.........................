@@ -409,6 +409,35 @@ function ScanTab({
 
       <button
         type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={decoding || saving}
+        className="flex w-full items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-[13.5px] transition-colors disabled:opacity-60"
+        style={{
+          background: CREAM_SOFT,
+          border: `1px solid ${BORDER}`,
+          color: CHARCOAL,
+          fontWeight: 600,
+          letterSpacing: "-0.005em",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+        }}
+      >
+        {decoding ? (
+          <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.8} />
+        ) : (
+          <ImageUp className="h-4 w-4" strokeWidth={1.8} />
+        )}
+        <span>{decoding ? "Reading image…" : "Upload a screenshot"}</span>
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageFile}
+      />
+
+      <button
+        type="button"
         onClick={switchToManual}
         className="mx-auto text-[13px] underline decoration-[rgba(28,28,28,0.35)] underline-offset-[3px] transition-colors hover:decoration-[rgba(28,28,28,0.7)]"
         style={{ color: CHARCOAL, fontWeight: 500 }}
