@@ -10,6 +10,7 @@ import {
   parseOtpauthUri,
   type Algorithm,
 } from "@/lib/vault-accounts";
+import { TagInput } from "@/components/vault/tags";
 import {
   ArrowLeft,
   ScanLine,
