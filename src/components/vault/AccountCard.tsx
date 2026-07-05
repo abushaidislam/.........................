@@ -27,6 +27,36 @@ function notifyLogoIssue(issuer: string, reason: "unmapped" | "error") {
   }
 }
 
+// Singleton clipboard-clear timer: last copied code wins. After 30s we
+// overwrite the clipboard so a forgotten copy doesn't linger.
+const CLIPBOARD_CLEAR_MS = 30_000;
+let clipboardClearTimer: number | null = null;
+let lastCopiedPlain: string | null = null;
+
+function scheduleClipboardClear(plain: string) {
+  if (typeof window === "undefined") return;
+  lastCopiedPlain = plain;
+  if (clipboardClearTimer !== null) window.clearTimeout(clipboardClearTimer);
+  clipboardClearTimer = window.setTimeout(async () => {
+    clipboardClearTimer = null;
+    try {
+      // Only clear if we can confirm the clipboard still holds our code —
+      // otherwise we'd wipe whatever the user copied afterwards.
+      const current = await navigator.clipboard.readText().catch(() => null);
+      if (current !== null && current === lastCopiedPlain) {
+        await navigator.clipboard.writeText("");
+      } else if (current === null) {
+        // Permission denied for read: overwrite defensively.
+        await navigator.clipboard.writeText("");
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      lastCopiedPlain = null;
+    }
+  }, CLIPBOARD_CLEAR_MS);
+}
+
 interface Props {
   account: DecryptedAccount;
   now: number;
