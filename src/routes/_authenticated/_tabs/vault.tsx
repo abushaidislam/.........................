@@ -282,6 +282,50 @@ function VaultPage() {
         </div>
       )}
 
+      {pendingTagCount > 0 && (
+        <div
+          className="mb-2 mt-1 flex items-center gap-2 rounded-full px-3.5 py-2 text-[12px]"
+          style={{
+            background: CREAM_SOFT,
+            border: `1px solid ${BORDER}`,
+            color: CHARCOAL,
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5)",
+          }}
+          role="status"
+          aria-live="polite"
+        >
+          <Tags className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+          <span className="flex-1 truncate">
+            {online
+              ? `${pendingTagCount} tag update${pendingTagCount === 1 ? "" : "s"} waiting to sync.`
+              : `${pendingTagCount} tag update${pendingTagCount === 1 ? "" : "s"} saved locally — will sync when online.`}
+          </span>
+          {online && (
+            <button
+              type="button"
+              onClick={syncPendingTags}
+              disabled={syncingTags}
+              className="flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] transition-colors disabled:opacity-60"
+              style={{
+                background: "rgba(28,28,28,0.06)",
+                color: CHARCOAL,
+                fontWeight: 600,
+              }}
+              aria-label="Retry syncing tag updates"
+            >
+              {syncingTags ? (
+                <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
+              ) : (
+                <RefreshCw className="h-3 w-3" strokeWidth={2} />
+              )}
+              Sync now
+            </button>
+          )}
+        </div>
+      )}
+
+
+
 
       {accounts && accounts.length > 0 && <SearchField value={query} onChange={setQuery} />}
 
