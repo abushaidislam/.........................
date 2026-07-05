@@ -302,6 +302,39 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
         </AnimatePresence>
       </div>
     </motion.button>
+    <AlertDialog open={confirmOpen} onOpenChange={(o) => (deleting ? null : setConfirmOpen(o))}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove {account.issuer || "this account"}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            The encrypted secret will be deleted from your vault. You'll need
+            the original QR or setup key to add it back. This can't be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              confirmDelete();
+            }}
+            disabled={deleting}
+            style={{ background: DANGER, color: "#fff" }}
+          >
+            {deleting ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Removing…
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5">
+                <Trash2 className="h-3.5 w-3.5" /> Remove
+              </span>
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 
