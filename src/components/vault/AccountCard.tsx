@@ -98,6 +98,8 @@ function hueFor(seed: string): number {
 export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDelete }: Props) {
   const [copied, setCopied] = useState(false);
   const [logoFailed, setLogoFailed] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const pressTimer = useRef<number | null>(null);
