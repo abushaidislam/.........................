@@ -65,7 +65,15 @@ function VaultPage() {
   const [retrying, setRetrying] = useState(false);
   const [activeTags, setActiveTags] = useState<Set<string>>(() => new Set());
   const [tagManagerOpen, setTagManagerOpen] = useState(false);
+  const [pendingTagCount, setPendingTagCount] = useState<number>(
+    () => (typeof window === "undefined" ? 0 : listQueuedTagUpdates().length),
+  );
+  const [syncingTags, setSyncingTags] = useState(false);
   const online = useOnlineStatus();
+
+  const refreshPendingCount = useCallback(() => {
+    setPendingTagCount(listQueuedTagUpdates().length);
+  }, []);
 
   const allTags = useMemo(() => {
     if (!accounts) return [] as { tag: string; count: number }[];
