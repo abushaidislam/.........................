@@ -50,6 +50,7 @@ function NewAccountPage() {
   const [tab, setTab] = useState<Tab>("scan");
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ kind: "error" | "info"; text: string } | null>(null);
+  const online = useOnlineStatus();
 
   const save = async (input: {
     issuer: string;
@@ -59,6 +60,13 @@ function NewAccountPage() {
     digits?: number;
     period?: number;
   }) => {
+    if (!online) {
+      setNotice({
+        kind: "error",
+        text: "You're offline. Reconnect to add a new account — the encrypted vault has to reach the server.",
+      });
+      return;
+    }
     const key = getVaultKey();
     if (!key) {
       navigate({ to: "/lock", search: { redirect: "/vault/new" } });
