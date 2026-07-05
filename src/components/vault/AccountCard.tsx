@@ -389,7 +389,10 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
         </AnimatePresence>
       </div>
     </motion.button>
+    {typeof document !== "undefined" && createPortal(
+      <>
     <AnimatePresence>
+
       {detailsOpen && (
         <motion.div
           key="details-sheet"
