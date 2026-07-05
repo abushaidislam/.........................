@@ -487,8 +487,12 @@ function TagManagerSheet({
   const doDelete = async (tag: string) => {
     setBusyTag(tag);
     try {
-      await applyTransform((tags) => tags.filter((t) => t !== tag));
-      toast.success(`Removed tag "${tag}"`);
+      const { anyQueued } = await applyTransform((tags) => tags.filter((t) => t !== tag));
+      toast.success(
+        anyQueued
+          ? `Removed "${tag}" locally — will sync when online`
+          : `Removed tag "${tag}"`,
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not remove tag.");
     } finally {
@@ -504,10 +508,14 @@ function TagManagerSheet({
     }
     setBusyTag(tag);
     try {
-      await applyTransform((tags) =>
+      const { anyQueued } = await applyTransform((tags) =>
         tags.includes(tag) ? [...tags.filter((t) => t !== tag), target] : tags,
       );
-      toast.success(`Renamed "${tag}" → "${target}"`);
+      toast.success(
+        anyQueued
+          ? `Renamed "${tag}" → "${target}" locally — will sync when online`
+          : `Renamed "${tag}" → "${target}"`,
+      );
       setRenameFor(null);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not rename tag.");
