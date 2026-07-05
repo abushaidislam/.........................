@@ -14,6 +14,7 @@ import {
   FileText,
   EyeOff,
   Fingerprint,
+  Download,
 } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
