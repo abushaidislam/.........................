@@ -160,14 +160,33 @@ export function AccountCard({ account, now, isFavorite, onToggleFavorite, onDele
   };
 
   const startPress = () => {
-    if (!onDelete) return;
     clearPress();
     longPressedRef.current = false;
     pressTimer.current = window.setTimeout(() => {
       longPressedRef.current = true;
       if (typeof navigator.vibrate === "function") navigator.vibrate(14);
-      setConfirmOpen(true);
+      setRevealed(false);
+      setDetailsOpen(true);
     }, 500);
+  };
+
+  const openDelete = () => {
+    setDetailsOpen(false);
+    // Give the details sheet a beat to unmount before the confirm slides in.
+    window.setTimeout(() => setConfirmOpen(true), 120);
+  };
+
+  const copyFromSheet = async () => {
+    try {
+      const plain = code.replace(/\s/g, "");
+      await navigator.clipboard.writeText(plain);
+      scheduleClipboardClear(plain);
+      setCopied(true);
+      if (typeof navigator.vibrate === "function") navigator.vibrate(6);
+      toast.success(`Code copied · clears in 30s`);
+    } catch {
+      toast.error("Couldn't copy to clipboard.");
+    }
   };
 
   const confirmDelete = async () => {
