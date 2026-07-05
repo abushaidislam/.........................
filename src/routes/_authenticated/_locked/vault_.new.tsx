@@ -60,6 +60,7 @@ function NewAccountPage() {
     algorithm?: Algorithm;
     digits?: number;
     period?: number;
+    tags?: string[];
   }) => {
     if (!online) {
       setNotice({
