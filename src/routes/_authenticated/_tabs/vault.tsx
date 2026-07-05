@@ -159,14 +159,34 @@ function VaultPage() {
             boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5)",
           }}
         >
-          <WifiOff className="h-3.5 w-3.5" strokeWidth={1.8} />
-          <span>
+          <WifiOff className="h-3.5 w-3.5 shrink-0" strokeWidth={1.8} />
+          <span className="flex-1 truncate">
             {online
               ? "Reconnecting — showing cached codes."
               : "You're offline — showing cached codes. Add or edit is disabled."}
           </span>
+          <button
+            type="button"
+            onClick={retry}
+            disabled={retrying}
+            className="flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] transition-colors disabled:opacity-60"
+            style={{
+              background: "rgba(28,28,28,0.06)",
+              color: CHARCOAL,
+              fontWeight: 600,
+            }}
+            aria-label="Retry loading vault"
+          >
+            {retrying ? (
+              <Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} />
+            ) : (
+              <RefreshCw className="h-3 w-3" strokeWidth={2} />
+            )}
+            Retry
+          </button>
         </div>
       )}
+
 
       {accounts && accounts.length > 0 && <SearchField value={query} onChange={setQuery} />}
 
