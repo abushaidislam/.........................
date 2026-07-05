@@ -41,47 +41,45 @@ Current shape:
 ## Remaining work on the shipped screens
 
 ### Security tab
-- **Change passphrase** — currently a "coming soon" chip. Real flow:
-  ask current passphrase → derive old KEK → unwrap DEK → derive new KEK
-  from new passphrase → re-wrap DEK → update `vault_meta`
-  (`kdf_salt`, `recovery_wrapped_key`, `recovery_wrapped_key_iv`,
-  optional new `passphrase_hint`). Never touch `vault_accounts` — the DEK
-  itself does not change, so ciphertexts stay valid.
-- **Auto-lock timer** is hard-coded to 5 min in `vault-session.ts`.
-  Expose a picker (1 / 5 / 15 / 30 min / never) and persist to
-  `localStorage` per user.
-- **Biometric row** already toggles enroll/disable — verify copy is clear
-  when platform doesn't support WebAuthn.
+- ~~**Change passphrase**~~ — DONE. Bottom-sheet flow verifies the
+  current passphrase by unwrapping the DEK, then `rewrapVaultKey` mints
+  a fresh KEK + salt + iv, updates `vault_meta`, and re-unlocks the
+  in-memory DEK. `vault_accounts` untouched.
+- ~~**Auto-lock timer**~~ — DONE. Picker (1 / 5 / 15 / 30 min / never)
+  in `vault-session.ts`, cached in `localStorage` and mirrored to
+  `profiles.auto_lock_pref` so it syncs across devices.
+- **Biometric row** already toggles enroll/disable — verify copy is
+  clear when the platform doesn't support WebAuthn.
 
 ### Profile tab
 - Display name is editable and persists to `profiles`. Verify RLS covers
   update on `profiles`.
-- **Avatar** — currently initials chip. Add upload to Supabase Storage
-  (`avatars` bucket, `user_id/` prefix, public read, owner-only write),
-  crop to square, show fallback initials when empty.
-- **Delete account** — soft flow: confirm → sign out → call an
-  authenticated server function that deletes `vault_accounts`,
-  `vault_meta`, `profiles`, and finally `auth.users` row via admin API.
+- ~~**Avatar**~~ — DONE. Client resizes to 512×512 JPEG
+  (`src/lib/avatar.ts`), uploads to the private `avatars` bucket at
+  `user_id/avatar.jpg`, stores the path on `profiles.avatar_url`, and
+  reads via short-lived signed URLs. Bottom-sheet gives Choose/Remove.
+- ~~**Delete account**~~ — DONE. `deleteMyAccount` server fn wipes
+  `vault_accounts`, `vault_meta`, `profiles`, avatar object, then calls
+  the admin API to remove the `auth.users` row.
 
-## Next feature candidates (not started)
+## Next feature candidates
 
 Ordered by user value on top of the current vault:
 
-1. ~~**Search + favorites** on the Vault tab~~ — DONE. Sticky search input
-   already shipped; favorites now use `src/lib/favorites.ts` (localStorage
-   per user id), star toggle on each `AccountCard`, and Vault renders two
-   groups: "Favorites" pinned above "All accounts".
-2. ~~**Recovery sheet**~~ — DONE. `/vault/recovery` route builds a
-   printable PDF with the account list plus a QR of the wrapped recovery
-   key (`kdf_algorithm`, `kdf_salt`, `recovery_wrapped_key`, iv).
-   Downloadable via `jspdf` + `qrcode`; linked from the Security tab.
-3. **Bulk import** — parse `otpauth-migration://` QR (Google
+1. ~~**Search + favorites**~~ — DONE.
+2. ~~**Recovery sheet**~~ — DONE.
+3. ~~**Copy code + auto-clear clipboard**~~ — DONE. `AccountCard`
+   schedules a singleton 30 s timer after each copy; on fire it reads
+   the clipboard and overwrites only if the value still matches the
+   copied code (defensively overwrites when read permission is denied).
+   A subtle "next XXX XXX" preview replaces the copy icon during the
+   last 5 s of the current window so users can wait for a fresh code.
+4. **Bulk import** — parse `otpauth-migration://` QR (Google
    Authenticator export), Aegis JSON, 2FAS JSON. New route
-   `_authenticated/_locked/vault_.import.tsx`; reuse existing add flow to
-   commit each parsed account.
-4. **Encrypted export** — download a passphrase-wrapped `.aegis` file
+   `_authenticated/_locked/vault_.import.tsx`; reuse existing add flow
+   to commit each parsed account.
+5. **Encrypted export** — download a passphrase-wrapped `.aegis` file
    that mirrors the DB shape, so users hold their own backup.
-5. **Copy code + auto-clear clipboard** after 30s, plus a next-code
-   preview when the current one is about to expire.
 
-Pick one after the remaining Security/Profile work lands.
+Bulk import is the next pickup.
+
