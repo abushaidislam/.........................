@@ -29,6 +29,7 @@ export interface VaultAccountRecord {
   period: number;
   sort_order: number;
   is_favorite: boolean;
+  tags: string[];
   secret_ciphertext: unknown;
   secret_iv: unknown;
 }
@@ -42,6 +43,7 @@ export interface DecryptedAccount {
   period: number;
   sort_order: number;
   is_favorite: boolean;
+  tags: string[];
   secret: string; // base32
 }
 
