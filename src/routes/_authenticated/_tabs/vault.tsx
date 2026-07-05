@@ -137,29 +137,29 @@ function VaultPage() {
         )}
 
         {filtered && filtered.length > 0 && (
-          <div
-            className="overflow-hidden rounded-[16px]"
-            style={{
-              background: CREAM_SOFT,
-              border: `1px solid ${BORDER}`,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-            }}
-          >
-            <AnimatePresence initial={false}>
-              <div className="divide-y" style={{ borderColor: BORDER }}>
-                {filtered.map((a, i) => (
-                  <motion.div
-                    key={a.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ ...soft, delay: Math.min(i * 0.03, 0.18) }}
-                  >
-                    <AccountCard account={a} now={now} />
-                  </motion.div>
-                ))}
+          <div className="flex flex-col gap-4">
+            {favoriteList.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                <SectionLabel>Favorites</SectionLabel>
+                <AccountGroup
+                  items={favoriteList}
+                  now={now}
+                  favorites={favorites}
+                  onToggleFavorite={toggleFavorite}
+                />
               </div>
-            </AnimatePresence>
+            )}
+            {otherList.length > 0 && (
+              <div className="flex flex-col gap-1.5">
+                {favoriteList.length > 0 && <SectionLabel>All accounts</SectionLabel>}
+                <AccountGroup
+                  items={otherList}
+                  now={now}
+                  favorites={favorites}
+                  onToggleFavorite={toggleFavorite}
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -173,6 +173,50 @@ function VaultPage() {
         )}
       </div>
     </>
+  );
+}
+
+function AccountGroup({
+  items,
+  now,
+  favorites,
+  onToggleFavorite,
+}: {
+  items: DecryptedAccount[];
+  now: number;
+  favorites: Set<string>;
+  onToggleFavorite: (id: string) => void;
+}) {
+  return (
+    <div
+      className="overflow-hidden rounded-[16px]"
+      style={{
+        background: CREAM_SOFT,
+        border: `1px solid ${BORDER}`,
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+      }}
+    >
+      <AnimatePresence initial={false}>
+        <div className="divide-y" style={{ borderColor: BORDER }}>
+          {items.map((a, i) => (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ ...soft, delay: Math.min(i * 0.03, 0.18) }}
+            >
+              <AccountCard
+                account={a}
+                now={now}
+                isFavorite={favorites.has(a.id)}
+                onToggleFavorite={onToggleFavorite}
+              />
+            </motion.div>
+          ))}
+        </div>
+      </AnimatePresence>
+    </div>
   );
 }
 
