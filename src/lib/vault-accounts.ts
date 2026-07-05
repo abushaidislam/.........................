@@ -204,13 +204,6 @@ export async function setAccountTags(
 /** Best-effort patch of the offline cache without a fresh server row. */
 async function patchCachedTags(id: string, tags: string[]): Promise<void> {
   try {
-    const { readVaultCache: _read } = await import("@/lib/vault-cache");
-    void _read; // referenced for tree-shakers; actual read uses closure below
-  } catch {
-    // ignore
-  }
-  try {
-    const { readVaultCache, upsertVaultCache: upsert } = await import("@/lib/vault-cache");
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -218,7 +211,7 @@ async function patchCachedTags(id: string, tags: string[]): Promise<void> {
     const rows = await readVaultCache(user.id);
     const row = rows?.find((r) => r.id === id);
     if (!row) return;
-    await upsert({ ...row, tags });
+    await upsertVaultCache({ ...row, tags });
   } catch {
     // Cache is best-effort.
   }
