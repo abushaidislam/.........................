@@ -41,6 +41,7 @@ import {
 import {
   AUTO_LOCK_OPTIONS,
   getAutoLockMs,
+  getVaultKey,
   isVaultUnlocked,
   lockVault,
   setAutoLockMs,
@@ -54,6 +55,13 @@ import {
   toByteaHex,
   unwrapVaultKey,
 } from "@/lib/vault-crypto";
+import {
+  disableBiometric,
+  enrollBiometric,
+  isBiometricEnabled,
+  isBiometricSupported,
+} from "@/lib/biometric";
+
 
 export const Route = createFileRoute("/_authenticated/_tabs/security")({
   beforeLoad: ({ location }) => {
