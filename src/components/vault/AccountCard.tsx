@@ -967,67 +967,71 @@ export function AccountCard({
                       </span>
                     </motion.button>
 
-                    {/* Copy primary */}
-                    <motion.button
-                      whileTap={{ scale: 0.99 }}
-                      onClick={copyFromSheet}
-                      className="mb-3 flex w-full items-center justify-center gap-2 rounded-[14px] px-4 py-3.5 text-[14px]"
-                      style={{
-                        background: CHARCOAL,
-                        color: CREAM_SOFT,
-                        fontWeight: 600,
-                        letterSpacing: "-0.005em",
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-                      }}
-                    >
-                      {copied ? (
-                        <>
-                          <Check className="h-4 w-4" strokeWidth={2.2} />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-4 w-4" strokeWidth={1.9} />
-                          Copy code
-                        </>
-                      )}
-                    </motion.button>
-
-                    {/* Next code preview */}
-                    <div
-                      className="mb-3 flex items-center gap-3 rounded-[14px] px-4 py-3"
-                      style={{
-                        background: "#fff",
-                        border: `1px solid ${BORDER}`,
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-                      }}
-                    >
-                      <Clock3
-                        className="h-4 w-4 shrink-0"
-                        strokeWidth={1.7}
-                        style={{ color: MUTED }}
-                      />
-                      <div className="flex flex-1 flex-col leading-tight">
-                        <span className="text-[13px]" style={{ color: CHARCOAL, fontWeight: 600 }}>
-                          Next code
-                        </span>
-                        <span className="text-[11px]" style={{ color: MUTED }}>
-                          Auto-generated
-                        </span>
-                      </div>
-                      <span
-                        className="tabular-nums text-[13px]"
+                    {/* Copy primary — hidden in edit mode */}
+                    {!editing && (
+                      <motion.button
+                        whileTap={{ scale: 0.99 }}
+                        onClick={copyFromSheet}
+                        className="mb-3 flex w-full items-center justify-center gap-2 rounded-[14px] px-4 py-3.5 text-[14px]"
                         style={{
-                          color: revealed || warn ? CHARCOAL : MUTED,
-                          fontFamily: "'JetBrains Mono', monospace",
-                          fontFeatureSettings: "'tnum'",
-                          letterSpacing: "0.12em",
+                          background: CHARCOAL,
+                          color: CREAM_SOFT,
                           fontWeight: 600,
+                          letterSpacing: "-0.005em",
+                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
                         }}
                       >
-                        {revealed && nextCode ? formatCode(nextCode) : "• • •  • • •"}
-                      </span>
-                    </div>
+                        {copied ? (
+                          <>
+                            <Check className="h-4 w-4" strokeWidth={2.2} />
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-4 w-4" strokeWidth={1.9} />
+                            Copy code
+                          </>
+                        )}
+                      </motion.button>
+                    )}
+
+                    {/* Next code preview — hidden in edit mode */}
+                    {!editing && (
+                      <div
+                        className="mb-3 flex items-center gap-3 rounded-[14px] px-4 py-3"
+                        style={{
+                          background: "#fff",
+                          border: `1px solid ${BORDER}`,
+                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                        }}
+                      >
+                        <Clock3
+                          className="h-4 w-4 shrink-0"
+                          strokeWidth={1.7}
+                          style={{ color: MUTED }}
+                        />
+                        <div className="flex flex-1 flex-col leading-tight">
+                          <span className="text-[13px]" style={{ color: CHARCOAL, fontWeight: 600 }}>
+                            Next code
+                          </span>
+                          <span className="text-[11px]" style={{ color: MUTED }}>
+                            Auto-generated
+                          </span>
+                        </div>
+                        <span
+                          className="tabular-nums text-[13px]"
+                          style={{
+                            color: revealed || warn ? CHARCOAL : MUTED,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontFeatureSettings: "'tnum'",
+                            letterSpacing: "0.12em",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {revealed && nextCode ? formatCode(nextCode) : "• • •  • • •"}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Tags editor */}
                     <div
@@ -1063,7 +1067,7 @@ export function AccountCard({
                             </span>
                           )}
                         </div>
-                        {dirtyTags && (
+                        {!editing && dirtyTags && (
                           <button
                             type="button"
                             onClick={saveTags}
@@ -1086,85 +1090,165 @@ export function AccountCard({
                           {tagError}
                         </p>
                       )}
-
                     </div>
 
-                    {/* Meta trio */}
-                    <div className="mb-3 grid grid-cols-3 gap-2">
-                      <MetaCell label="Algorithm" value={account.algorithm} />
-                      <MetaCell label="Digits" value={String(account.digits)} />
-                      <MetaCell label="Period" value={`${account.period}s`} />
-                    </div>
-
-                    {/* Storage note */}
-                    <div
-                      className="mb-4 flex items-start gap-3 rounded-[14px] px-4 py-3"
-                      style={{
-                        background: "rgba(28,28,28,0.03)",
-                        border: `1px solid ${BORDER}`,
-                      }}
-                    >
-                      <ShieldCheck
-                        className="mt-0.5 h-4 w-4 shrink-0"
-                        strokeWidth={1.7}
-                        style={{ color: CHARCOAL }}
-                      />
-                      <div className="flex flex-col gap-0.5">
-                        <span
-                          className="text-[12.5px]"
-                          style={{ color: CHARCOAL, fontWeight: 600 }}
-                        >
-                          Stored on this device
-                        </span>
-                        <span className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
-                          Secret stays inside your encrypted vault. Use Security → Export for a
-                          portable backup.
-                        </span>
+                    {/* Meta trio — hidden in edit mode */}
+                    {!editing && (
+                      <div className="mb-3 grid grid-cols-3 gap-2">
+                        <MetaCell label="Algorithm" value={account.algorithm} />
+                        <MetaCell label="Digits" value={String(account.digits)} />
+                        <MetaCell label="Period" value={`${account.period}s`} />
                       </div>
-                    </div>
+                    )}
 
-                    {/* Action row: Reveal + Remove */}
-                    <div className="grid grid-cols-2 gap-2 pb-1">
-                      <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setRevealed((v) => !v)}
-                        className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px]"
+                    {/* Storage note — hidden in edit mode */}
+                    {!editing && (
+                      <div
+                        className="mb-4 flex items-start gap-3 rounded-[14px] px-4 py-3"
                         style={{
-                          background: "#fff",
-                          color: CHARCOAL,
+                          background: "rgba(28,28,28,0.03)",
                           border: `1px solid ${BORDER}`,
-                          fontWeight: 600,
-                          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
                         }}
                       >
-                        {revealed ? (
-                          <>
-                            <EyeOff className="h-4 w-4" strokeWidth={1.8} />
-                            Hide
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="h-4 w-4" strokeWidth={1.8} />
-                            Reveal
-                          </>
-                        )}
-                      </motion.button>
-                      <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={openDelete}
-                        disabled={!onDelete}
-                        className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-50"
+                        <ShieldCheck
+                          className="mt-0.5 h-4 w-4 shrink-0"
+                          strokeWidth={1.7}
+                          style={{ color: CHARCOAL }}
+                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className="text-[12.5px]"
+                            style={{ color: CHARCOAL, fontWeight: 600 }}
+                          >
+                            Stored on this device
+                          </span>
+                          <span className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
+                            Secret stays inside your encrypted vault. Use Security → Export for a
+                            portable backup.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Edit-mode hint */}
+                    {editing && (
+                      <div
+                        className="mb-4 flex items-start gap-3 rounded-[14px] px-4 py-3"
                         style={{
-                          background: "rgba(178,58,42,0.06)",
-                          color: DANGER,
-                          border: `1px solid rgba(178,58,42,0.25)`,
-                          fontWeight: 600,
+                          background: "rgba(28,28,28,0.03)",
+                          border: `1px dashed ${BORDER}`,
                         }}
                       >
-                        <Trash2 className="h-4 w-4" strokeWidth={1.9} />
-                        Remove
-                      </motion.button>
-                    </div>
+                        <Pencil
+                          className="mt-0.5 h-4 w-4 shrink-0"
+                          strokeWidth={1.8}
+                          style={{ color: CHARCOAL }}
+                        />
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className="text-[12.5px]"
+                            style={{ color: CHARCOAL, fontWeight: 600 }}
+                          >
+                            Editing account & tags
+                          </span>
+                          <span className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
+                            Service name and label update instantly. The TOTP secret is never
+                            changed here.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {detailsError && (
+                      <p
+                        className="mb-2 text-[12px]"
+                        style={{ color: DANGER }}
+                        role="alert"
+                      >
+                        {detailsError}
+                      </p>
+                    )}
+
+                    {/* Action row */}
+                    {editing ? (
+                      <div className="grid grid-cols-[1fr_auto] gap-2 pb-1">
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={saveEdits}
+                          disabled={!canSaveEdits || detailsSaving}
+                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-55"
+                          style={{
+                            background: CHARCOAL,
+                            color: CREAM_SOFT,
+                            fontWeight: 600,
+                            letterSpacing: "-0.005em",
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+                          }}
+                        >
+                          {detailsSaving ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+                              Saving…
+                            </>
+                          ) : (
+                            <>
+                              <Check className="h-4 w-4" strokeWidth={2.1} />
+                              Save changes
+                            </>
+                          )}
+                        </motion.button>
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={cancelEdit}
+                          disabled={detailsSaving}
+                          className="flex items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-[13px]"
+                          style={{
+                            background: "#fff",
+                            color: CHARCOAL,
+                            border: `1px solid ${BORDER}`,
+                            fontWeight: 600,
+                          }}
+                        >
+                          Cancel
+                        </motion.button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2 pb-1">
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => {
+                            setEditing(true);
+                            setDetailsError(null);
+                          }}
+                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px]"
+                          style={{
+                            background: "#fff",
+                            color: CHARCOAL,
+                            border: `1px solid ${BORDER}`,
+                            fontWeight: 600,
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" strokeWidth={1.9} />
+                          Edit
+                        </motion.button>
+                        <motion.button
+                          whileTap={{ scale: 0.98 }}
+                          onClick={openDelete}
+                          disabled={!onDelete}
+                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-50"
+                          style={{
+                            background: "rgba(178,58,42,0.06)",
+                            color: DANGER,
+                            border: `1px solid rgba(178,58,42,0.25)`,
+                            fontWeight: 600,
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" strokeWidth={1.9} />
+                          Remove
+                        </motion.button>
+                      </div>
+                    )}
 
                     {/* Close */}
                     <motion.button
