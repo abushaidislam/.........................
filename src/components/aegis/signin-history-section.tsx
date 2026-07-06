@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboard
 import { useServerFn } from "@tanstack/react-start";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { History, Loader2, Monitor, RefreshCw, Smartphone, Tablet, X } from "lucide-react";
+import { History, Monitor, RefreshCw, Smartphone, Tablet, X } from "lucide-react";
 
 import { BORDER, CHARCOAL, CREAM_SOFT, MUTED, soft } from "@/components/aegis/chrome";
 import { SettingsGroup, SettingsRow } from "@/components/aegis/settings";
