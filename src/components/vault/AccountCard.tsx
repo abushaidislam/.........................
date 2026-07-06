@@ -814,11 +814,11 @@ export function AccountCard({
                           <div className="mt-1 flex flex-col gap-1.5">
                             <input
                               id={detailsTitleId}
+                              ref={firstEditFieldRef}
                               value={issuerDraft}
                               onChange={(e) => setIssuerDraft(e.target.value)}
                               placeholder="Service (e.g. Google)"
                               maxLength={80}
-                              autoFocus
                               className="w-full rounded-[10px] px-2.5 py-1.5 text-[15px] outline-none transition-colors focus:border-current"
                               style={{
                                 background: "#fff",
