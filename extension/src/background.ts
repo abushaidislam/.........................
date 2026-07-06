@@ -49,6 +49,8 @@ interface UnlockedState {
   accounts: ExtAccount[];
   expiresAt: number; // epoch ms
   userId: string;
+  syncedAt: number; // epoch ms of last SYNC_VAULT
+  syncSeq: number;  // monotonic counter set by the web app
 }
 
 export type Message =
@@ -56,10 +58,11 @@ export type Message =
   | { type: "GET_VERSION" }
   | { type: "GET_STATE" }
   | { type: "LOCK" }
-  | { type: "SYNC_VAULT"; userId: string; accounts: ExtAccount[]; ttlMs?: number }
+  | { type: "SYNC_VAULT"; userId: string; accounts: ExtAccount[]; ttlMs?: number; syncSeq?: number }
   | { type: "MATCH_HOST"; host: string }
   | { type: "GET_CODE"; accountId: string }
   | { type: "CLIPBOARD_ARMED"; tabId: number; accountId: string };
+
 
 export type Response =
   | { ok: true; [k: string]: unknown }
