@@ -1075,49 +1075,61 @@ export function AccountCard({
                     )}
 
                     {/* Tags editor — only visible inside edit mode */}
-                    {editing && (
-                      <div
-                        className="mb-3 rounded-[14px] px-3.5 py-3"
-                        style={{
-                          background: "rgba(28,28,28,0.025)",
-                          border: `1px solid ${BORDER}`,
-                        }}
-                      >
-                        <div className="mb-2 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="text-[9.5px] uppercase"
-                              style={{
-                                color: MUTED,
-                                fontFamily: "'JetBrains Mono', monospace",
-                                letterSpacing: "0.22em",
-                              }}
-                            >
-                              Tags
-                            </span>
-                            {tagsDraft.length > 0 && (
-                              <span
-                                className="rounded-full px-1.5 py-0.5 text-[10px]"
-                                style={{
-                                  background: CHARCOAL,
-                                  color: CREAM_SOFT,
-                                  fontWeight: 600,
-                                  lineHeight: 1,
-                                }}
-                              >
-                                {tagsDraft.length}
-                              </span>
+                    <AnimatePresence initial={false}>
+                      {editing && (
+                        <motion.div
+                          key="tags-editor"
+                          initial={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
+                          animate={{ opacity: 1, height: "auto", marginBottom: 12, y: 0 }}
+                          exit={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
+                          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                          style={{ overflow: "hidden" }}
+                        >
+                          <div
+                            className="rounded-[14px] px-3.5 py-3"
+                            style={{
+                              background: "rgba(28,28,28,0.025)",
+                              border: `1px solid ${BORDER}`,
+                            }}
+                          >
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="text-[9.5px] uppercase"
+                                  style={{
+                                    color: MUTED,
+                                    fontFamily: "'JetBrains Mono', monospace",
+                                    letterSpacing: "0.22em",
+                                  }}
+                                >
+                                  Tags
+                                </span>
+                                {tagsDraft.length > 0 && (
+                                  <span
+                                    className="rounded-full px-1.5 py-0.5 text-[10px]"
+                                    style={{
+                                      background: CHARCOAL,
+                                      color: CREAM_SOFT,
+                                      fontWeight: 600,
+                                      lineHeight: 1,
+                                    }}
+                                  >
+                                    {tagsDraft.length}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <TagInput value={tagsDraft} onChange={setTagsDraft} />
+                            {tagError && (
+                              <p className="mt-1.5 text-[11px]" style={{ color: DANGER }}>
+                                {tagError}
+                              </p>
                             )}
                           </div>
-                        </div>
-                        <TagInput value={tagsDraft} onChange={setTagsDraft} />
-                        {tagError && (
-                          <p className="mt-1.5 text-[11px]" style={{ color: DANGER }}>
-                            {tagError}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
 
 
                     {/* Meta trio — hidden in edit mode */}
@@ -1159,33 +1171,45 @@ export function AccountCard({
                     )}
 
                     {/* Edit-mode hint */}
-                    {editing && (
-                      <div
-                        className="mb-4 flex items-start gap-3 rounded-[14px] px-4 py-3"
-                        style={{
-                          background: "rgba(28,28,28,0.03)",
-                          border: `1px dashed ${BORDER}`,
-                        }}
-                      >
-                        <Pencil
-                          className="mt-0.5 h-4 w-4 shrink-0"
-                          strokeWidth={1.8}
-                          style={{ color: CHARCOAL }}
-                        />
-                        <div className="flex flex-col gap-0.5">
-                          <span
-                            className="text-[12.5px]"
-                            style={{ color: CHARCOAL, fontWeight: 600 }}
+                    <AnimatePresence initial={false}>
+                      {editing && (
+                        <motion.div
+                          key="edit-hint"
+                          initial={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
+                          animate={{ opacity: 1, height: "auto", marginBottom: 16, y: 0 }}
+                          exit={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
+                          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                          style={{ overflow: "hidden" }}
+                        >
+                          <div
+                            className="flex items-start gap-3 rounded-[14px] px-4 py-3"
+                            style={{
+                              background: "rgba(28,28,28,0.03)",
+                              border: `1px dashed ${BORDER}`,
+                            }}
                           >
-                            Editing account & tags
-                          </span>
-                          <span className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
-                            Service name and label update instantly. The TOTP secret is never
-                            changed here.
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                            <Pencil
+                              className="mt-0.5 h-4 w-4 shrink-0"
+                              strokeWidth={1.8}
+                              style={{ color: CHARCOAL }}
+                            />
+                            <div className="flex flex-col gap-0.5">
+                              <span
+                                className="text-[12.5px]"
+                                style={{ color: CHARCOAL, fontWeight: 600 }}
+                              >
+                                Editing account & tags
+                              </span>
+                              <span className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
+                                Service name and label update instantly. The TOTP secret is never
+                                changed here.
+                              </span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
 
                     {detailsError && (
                       <p
@@ -1198,85 +1222,102 @@ export function AccountCard({
                     )}
 
                     {/* Action row */}
-                    {editing ? (
-                      <div className="grid grid-cols-[1fr_auto] gap-2 pb-1">
-                        <motion.button
-                          whileTap={{ scale: 0.98 }}
-                          onClick={saveEdits}
-                          disabled={!canSaveEdits || detailsSaving}
-                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-55"
-                          style={{
-                            background: CHARCOAL,
-                            color: CREAM_SOFT,
-                            fontWeight: 600,
-                            letterSpacing: "-0.005em",
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
-                          }}
+                    <AnimatePresence mode="wait" initial={false}>
+                      {editing ? (
+                        <motion.div
+                          key="actions-editing"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                          className="grid grid-cols-[1fr_auto] gap-2 pb-1"
                         >
-                          {detailsSaving ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
-                              Saving…
-                            </>
-                          ) : (
-                            <>
-                              <Check className="h-4 w-4" strokeWidth={2.1} />
-                              Save changes
-                            </>
-                          )}
-                        </motion.button>
-                        <motion.button
-                          whileTap={{ scale: 0.98 }}
-                          onClick={cancelEdit}
-                          disabled={detailsSaving}
-                          className="flex items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-[13px]"
-                          style={{
-                            background: "#fff",
-                            color: CHARCOAL,
-                            border: `1px solid ${BORDER}`,
-                            fontWeight: 600,
-                          }}
+                          <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={saveEdits}
+                            disabled={!canSaveEdits || detailsSaving}
+                            className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-55"
+                            style={{
+                              background: CHARCOAL,
+                              color: CREAM_SOFT,
+                              fontWeight: 600,
+                              letterSpacing: "-0.005em",
+                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
+                            }}
+                          >
+                            {detailsSaving ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} />
+                                Saving…
+                              </>
+                            ) : (
+                              <>
+                                <Check className="h-4 w-4" strokeWidth={2.1} />
+                                Save changes
+                              </>
+                            )}
+                          </motion.button>
+                          <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={cancelEdit}
+                            disabled={detailsSaving}
+                            className="flex items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-[13px]"
+                            style={{
+                              background: "#fff",
+                              color: CHARCOAL,
+                              border: `1px solid ${BORDER}`,
+                              fontWeight: 600,
+                            }}
+                          >
+                            Cancel
+                          </motion.button>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="actions-idle"
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                          className="grid grid-cols-2 gap-2 pb-1"
                         >
-                          Cancel
-                        </motion.button>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 gap-2 pb-1">
-                        <motion.button
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => {
-                            setEditing(true);
-                            setDetailsError(null);
-                          }}
-                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px]"
-                          style={{
-                            background: "#fff",
-                            color: CHARCOAL,
-                            border: `1px solid ${BORDER}`,
-                            fontWeight: 600,
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" strokeWidth={1.9} />
-                          Edit
-                        </motion.button>
-                        <motion.button
-                          whileTap={{ scale: 0.98 }}
-                          onClick={openDelete}
-                          disabled={!onDelete}
-                          className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-50"
-                          style={{
-                            background: "rgba(178,58,42,0.06)",
-                            color: DANGER,
-                            border: `1px solid rgba(178,58,42,0.25)`,
-                            fontWeight: 600,
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" strokeWidth={1.9} />
-                          Remove
-                        </motion.button>
-                      </div>
-                    )}
+                          <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              setEditing(true);
+                              setDetailsError(null);
+                            }}
+                            className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px]"
+                            style={{
+                              background: "#fff",
+                              color: CHARCOAL,
+                              border: `1px solid ${BORDER}`,
+                              fontWeight: 600,
+                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" strokeWidth={1.9} />
+                            Edit
+                          </motion.button>
+                          <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={openDelete}
+                            disabled={!onDelete}
+                            className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px] disabled:opacity-50"
+                            style={{
+                              background: "rgba(178,58,42,0.06)",
+                              color: DANGER,
+                              border: `1px solid rgba(178,58,42,0.25)`,
+                              fontWeight: 600,
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" strokeWidth={1.9} />
+                            Remove
+                          </motion.button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
 
                     {/* Close */}
                     <motion.button
