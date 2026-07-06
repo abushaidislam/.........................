@@ -817,7 +817,16 @@ export function AccountCard({
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 40, opacity: 0 }}
                     transition={soft}
-                    className="relative z-10 mx-auto w-full max-w-[440px] rounded-t-[22px] px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-4 sm:rounded-[22px] focus:outline-none"
+                    drag="y"
+                    dragDirectionLock
+                    dragConstraints={{ top: 0, bottom: 0 }}
+                    dragElastic={{ top: 0, bottom: 0.6 }}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.y > 120 || info.velocity.y > 600) {
+                        setDetailsOpen(false);
+                      }
+                    }}
+                    className="relative z-10 mx-auto w-full max-w-[440px] touch-pan-y rounded-t-[22px] px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-4 sm:rounded-[22px] focus:outline-none"
                     style={{
                       background: CREAM_SOFT,
                       border: `1px solid ${BORDER}`,
