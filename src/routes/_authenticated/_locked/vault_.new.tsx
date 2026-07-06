@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { IScannerControls } from "@zxing/browser";
 import { getVaultKey } from "@/lib/vault-session";
@@ -51,40 +51,74 @@ function NewAccountPage() {
   const [tab, setTab] = useState<Tab>("scan");
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ kind: "error" | "info"; text: string } | null>(null);
+  // Bumped when a QR-triggered save fails so ScanTab can fully re-mount the
+  // camera; without this the user is stuck with a frozen preview after any
+  // save-side error (offline, expired key, server rejection).
+  const [scanAttempt, setScanAttempt] = useState(0);
   const online = useOnlineStatus();
 
-  const save = async (input: {
-    issuer: string;
-    label: string;
-    secret: string;
-    algorithm?: Algorithm;
-    digits?: number;
-    period?: number;
-    tags?: string[];
-  }) => {
-    if (!online) {
-      setNotice({
-        kind: "error",
-        text: "You're offline. Reconnect to add a new account — the encrypted vault has to reach the server.",
-      });
-      return;
-    }
-    const key = getVaultKey();
-    if (!key) {
-      navigate({ to: "/lock", search: { redirect: "/vault/new" } });
-      return;
-    }
-    setSaving(true);
-    setNotice(null);
-    try {
-      await addAccount(key, user.id, input);
-      navigate({ to: "/vault", replace: true });
-    } catch (err) {
-      setNotice({ kind: "error", text: err instanceof Error ? err.message : "Could not save." });
-    } finally {
-      setSaving(false);
-    }
-  };
+  const save = useCallback(
+    async (input: {
+      issuer: string;
+      label: string;
+      secret: string;
+      algorithm?: Algorithm;
+      digits?: number;
+      period?: number;
+      tags?: string[];
+    }): Promise<boolean> => {
+      if (!online) {
+        setNotice({
+          kind: "error",
+          text: "You're offline. Reconnect to add a new account — the encrypted vault has to reach the server.",
+        });
+        return false;
+      }
+      const key = getVaultKey();
+      if (!key) {
+        navigate({ to: "/lock", search: { redirect: "/vault/new" } });
+        return false;
+      }
+      setSaving(true);
+      setNotice(null);
+      try {
+        await addAccount(key, user.id, input);
+        navigate({ to: "/vault", replace: true });
+        return true;
+      } catch (err) {
+        setNotice({ kind: "error", text: err instanceof Error ? err.message : "Could not save." });
+        return false;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [online, user.id, navigate],
+  );
+
+  const handleQrDetected = useCallback(
+    async (uri: string) => {
+      let parsed;
+      try {
+        parsed = parseOtpauthUri(uri);
+      } catch (err) {
+        setNotice({
+          kind: "error",
+          text: err instanceof Error ? err.message : "That QR isn't a valid otpauth code.",
+        });
+        setScanAttempt((n) => n + 1);
+        return;
+      }
+      const ok = await save(parsed);
+      if (!ok) setScanAttempt((n) => n + 1);
+    },
+    [save],
+  );
+
+  const handleScanError = useCallback((msg: string) => {
+    setNotice({ kind: "error", text: msg });
+  }, []);
+
+  const switchToManual = useCallback(() => setTab("manual"), []);
 
   return (
     <AegisScreen>
@@ -176,23 +210,11 @@ function NewAccountPage() {
             >
               {tab === "scan" ? (
                 <ScanTab
-                  onDetected={(uri) => {
-                    try {
-                      const parsed = parseOtpauthUri(uri);
-                      save(parsed);
-                    } catch (err) {
-                      setNotice({
-                        kind: "error",
-                        text:
-                          err instanceof Error
-                            ? err.message
-                            : "That QR isn't a valid otpauth code.",
-                      });
-                    }
-                  }}
-                  onError={(msg) => setNotice({ kind: "error", text: msg })}
+                  key={scanAttempt}
+                  onDetected={handleQrDetected}
+                  onError={handleScanError}
                   saving={saving}
-                  switchToManual={() => setTab("manual")}
+                  switchToManual={switchToManual}
                 />
               ) : (
                 <ManualTab onSubmit={save} saving={saving} />
@@ -292,10 +314,25 @@ function ScanTab({
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [decoding, setDecoding] = useState(false);
 
+  // Stash the latest handlers in refs so the camera-init effect can run
+  // exactly once per mount. Depending on the raw callbacks would restart
+  // the camera on every parent render (saving/notice state changes).
+  const onDetectedRef = useRef(onDetected);
+  const onErrorRef = useRef(onError);
+  useEffect(() => {
+    onDetectedRef.current = onDetected;
+    onErrorRef.current = onError;
+  });
+
+  // Latch so the same QR frame — or a stale second decode arriving before
+  // controls.stop() takes effect — can't trigger two saves.
+  const handledRef = useRef(false);
+
   const handleImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+    if (handledRef.current) return;
     setDecoding(true);
     const url = URL.createObjectURL(file);
     try {
@@ -304,12 +341,13 @@ function ScanTab({
       const result = await reader.decodeFromImageUrl(url);
       const text = result.getText();
       if (!text.startsWith("otpauth://")) {
-        onError("That image doesn't contain a valid otpauth QR code.");
+        onErrorRef.current("That image doesn't contain a valid otpauth QR code.");
         return;
       }
-      onDetected(text);
+      handledRef.current = true;
+      onDetectedRef.current(text);
     } catch {
-      onError("Couldn't read a QR code from that image. Try a clearer screenshot.");
+      onErrorRef.current("Couldn't read a QR code from that image. Try a clearer screenshot.");
     } finally {
       URL.revokeObjectURL(url);
       setDecoding(false);
@@ -325,13 +363,12 @@ function ScanTab({
       const reader = new BrowserQRCodeReader();
       try {
         controls = await reader.decodeFromVideoDevice(undefined, videoRef.current!, (result) => {
-          if (result && !cancelled) {
-            const text = result.getText();
-            if (text.startsWith("otpauth://")) {
-              controls?.stop();
-              onDetected(text);
-            }
-          }
+          if (!result || cancelled || handledRef.current) return;
+          const text = result.getText();
+          if (!text.startsWith("otpauth://")) return;
+          handledRef.current = true;
+          controls?.stop();
+          onDetectedRef.current(text);
         });
         if (!cancelled) setStarting(false);
       } catch (err) {
@@ -339,7 +376,7 @@ function ScanTab({
         setStarting(false);
         const name = (err as { name?: string })?.name ?? "";
         if (name === "NotAllowedError" || name === "SecurityError") setPermissionDenied(true);
-        else onError(err instanceof Error ? err.message : "Could not start camera.");
+        else onErrorRef.current(err instanceof Error ? err.message : "Could not start camera.");
       }
     })();
 
@@ -347,7 +384,8 @@ function ScanTab({
       cancelled = true;
       controls?.stop();
     };
-  }, [onDetected, onError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex flex-col gap-4">
