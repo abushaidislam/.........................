@@ -166,7 +166,7 @@ export async function setAccountFavorite(id: string, isFavorite: boolean): Promi
     .single();
   if (error) throw error;
   if (data) {
-    const row = data as VaultAccountRecord & { user_id: string };
+    const row = data as unknown as VaultAccountRecord & { user_id: string };
     void upsertVaultCache(row);
     recordFavoriteToggle(row.user_id, id, isFavorite);
     // The server has confirmed our value — the optimistic-window entry
