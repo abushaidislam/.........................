@@ -1,8 +1,10 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { initAutoLockForUser, useActivityKeepAlive } from "@/lib/vault-session";
 import { initHideCodesForUser } from "@/lib/vault-privacy";
+import { recordDeviceSeen } from "@/lib/devices.functions";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
