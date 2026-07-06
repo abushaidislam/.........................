@@ -29,6 +29,7 @@ import {
   flushPendingOutbox,
   pendingOutboxCount,
   readCachedAccountsOnly,
+  reorderAccounts,
   setAccountFavorite,
   setAccountTags,
   syncAccountsFromServer,
