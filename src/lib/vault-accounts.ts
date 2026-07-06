@@ -356,6 +356,37 @@ export async function flushPendingTagUpdates(): Promise<number> {
   return synced.length;
 }
 
+/**
+ * Flush queued delete + edit mutations against the server. Returns the
+ * count that reached the server. Safe to call repeatedly; missing-row
+ * errors are treated as success (intent satisfied).
+ */
+export async function flushPendingOutbox(): Promise<number> {
+  if (isOffline()) return 0;
+  const flushed = await flushOutbox({
+    delete: async (id) => {
+      const { error } = await supabase.from("vault_accounts").delete().eq("id", id);
+      if (error) throw error;
+      void removeFromVaultCache(id);
+    },
+    updateDetails: async (id, issuer, label) => {
+      const { data, error } = await supabase
+        .from("vault_accounts")
+        .update({ issuer, label })
+        .eq("id", id)
+        .select(ACCOUNT_SELECT)
+        .single();
+      if (error) throw error;
+      if (data) void upsertVaultCache(data as VaultAccountRecord);
+    },
+  });
+  return flushed.length;
+}
+
+export function pendingOutboxCount(): number {
+  return outboxSize();
+}
+
 async function decryptRows(
   dek: CryptoKey,
   rows: VaultAccountRecord[],
