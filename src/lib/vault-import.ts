@@ -147,11 +147,12 @@ export function parseGoogleAuthMigrationUri(uri: string): ParsedOtpauth[] {
       const len = reader.varint();
       const sub = decodeOtpParameters(reader, reader.pos + len);
       if (!sub.secret || sub.secret.length === 0) continue;
-      if (sub.type !== undefined && sub.type !== 2) continue; // TOTP only
+      // Google migration wire uses type 1=HOTP, 2=TOTP. Everything else is
+      // treated as TOTP so a payload that adds a new type doesn't drop rows.
+      const isHotp = sub.type === 1;
       const secret = bytesToBase32(sub.secret);
       const rawName = sub.name?.trim() ?? "";
       const rawIssuer = sub.issuer?.trim() ?? "";
-      // Google often stores "Issuer:label" in name; split when issuer is empty
       let issuer = rawIssuer;
       let label = rawName;
       if (!issuer && rawName.includes(":")) {
@@ -166,6 +167,8 @@ export function parseGoogleAuthMigrationUri(uri: string): ParsedOtpauth[] {
         algorithm: ALGO_MAP[sub.algorithm ?? 1] ?? "SHA1",
         digits: DIGITS_MAP[sub.digits ?? 1] ?? 6,
         period: 30,
+        otp_type: isHotp ? "hotp" : "totp",
+        ...(isHotp ? { counter: 0 } : {}),
       });
     } else {
       reader.skip(wire);
