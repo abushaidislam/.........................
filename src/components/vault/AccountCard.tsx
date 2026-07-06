@@ -817,7 +817,16 @@ export function AccountCard({
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 40, opacity: 0 }}
                     transition={soft}
-                    className="relative z-10 mx-auto w-full max-w-[440px] rounded-t-[22px] px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-4 sm:rounded-[22px] focus:outline-none"
+                    drag="y"
+                    dragDirectionLock
+                    dragConstraints={{ top: 0, bottom: 0 }}
+                    dragElastic={{ top: 0, bottom: 0.6 }}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.y > 120 || info.velocity.y > 600) {
+                        setDetailsOpen(false);
+                      }
+                    }}
+                    className="relative z-10 mx-auto w-full max-w-[440px] touch-pan-y rounded-t-[22px] px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-4 sm:rounded-[22px] focus:outline-none"
                     style={{
                       background: CREAM_SOFT,
                       border: `1px solid ${BORDER}`,
@@ -1410,16 +1419,8 @@ export function AccountCard({
                     </AnimatePresence>
 
 
-                    {/* Close */}
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setDetailsOpen(false)}
-                      className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full"
-                      style={{ background: "rgb(var(--aegis-ink-rgb) / 0.06)", color: CHARCOAL }}
-                      aria-label="Close"
-                    >
-                      <X className="h-4 w-4" strokeWidth={1.8} />
-                    </motion.button>
+
+
                   </motion.div>
                 </motion.div>
               )}
