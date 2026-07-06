@@ -153,12 +153,14 @@ function HistorySheet({
   events,
   loading,
   refreshing,
+  errorMsg,
   onRefresh,
   onClose,
 }: {
   events: LoginEventRow[] | null;
   loading: boolean;
   refreshing: boolean;
+  errorMsg: string | null;
   onRefresh: () => void;
   onClose: () => void;
 }) {
