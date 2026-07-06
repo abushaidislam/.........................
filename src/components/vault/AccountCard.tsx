@@ -1193,10 +1193,10 @@ export function AccountCard({
                       {editing && (
                         <motion.div
                           key="edit-hint"
-                          initial={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
+                          initial={{ opacity: 0, height: 0, marginBottom: 0, y: -4 }}
                           animate={{ opacity: 1, height: "auto", marginBottom: 16, y: 0 }}
-                          exit={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
-                          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                          exit={{ opacity: 0, height: 0, marginBottom: 0, y: -4, transition: EDIT_COLLAPSE }}
+                          transition={EDIT_EXPAND}
                           style={{ overflow: "hidden" }}
                         >
                           <div
