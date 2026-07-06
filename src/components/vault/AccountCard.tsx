@@ -13,14 +13,17 @@ import {
   Clock3,
   Pencil,
   MousePointerClick,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
+  advanceHotpCounter,
   generateCode,
   setAccountTags,
   updateAccountDetails,
   type DecryptedAccount,
 } from "@/lib/vault-accounts";
+import { getVaultKey } from "@/lib/vault-session";
 import { BORDER, CHARCOAL, CREAM_SOFT, MUTED, soft } from "@/components/aegis/chrome";
 import { logoUrlFor, domainFromIssuer } from "@/lib/issuer-domain";
 import { useHideCodes } from "@/lib/vault-privacy";
