@@ -25,6 +25,8 @@ export interface ExportedAccount {
   algorithm: "SHA1" | "SHA256" | "SHA512";
   digits: number;
   period: number;
+  otp_type?: "totp" | "hotp" | "steam";
+  counter?: number;
 }
 
 export interface EncryptedExportFile {
