@@ -1,0 +1,1 @@
+async function e(){try{return!!(await chrome.runtime.sendMessage({type:`PING`}))?.ok}catch{return!1}}e();
