@@ -528,6 +528,8 @@ function VaultPage() {
             onTagsChanged={handleTagsChanged}
             onDetailsChanged={handleDetailsChanged}
             tagSuggestions={tagNames}
+            dndEnabled={online && !query.trim() && activeTags.size === 0}
+            onReorder={handleReorder}
           />
         )}
 
