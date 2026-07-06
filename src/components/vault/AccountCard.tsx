@@ -25,6 +25,23 @@ import {
 } from "@/lib/vault-accounts";
 import { getVaultKey } from "@/lib/vault-session";
 import { BORDER, CHARCOAL, CREAM_SOFT, DANGER, FAV, MUTED, soft } from "@/components/aegis/chrome";
+import {
+  typeBadge,
+  typeBody,
+  typeCardTitle,
+  typeCode,
+  typeCodeLg,
+  typeCodeNext,
+  typeDanger,
+  typeEyebrow,
+  typeMetaLabel,
+  typeMetaValue,
+  typeSheetTitle,
+  typeSheetTitleSm,
+  typeSubLabel,
+  typeTimer,
+} from "@/components/aegis/typography";
+
 import { logoUrlFor, domainFromIssuer } from "@/lib/issuer-domain";
 import { useHideCodes } from "@/lib/vault-privacy";
 import { TagChip, TagInput } from "@/components/vault/tags";
