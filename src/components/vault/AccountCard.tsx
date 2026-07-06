@@ -374,7 +374,7 @@ export function AccountCard({
   const collapseT = prefersReducedMotion
     ? { height: zero, marginBottom: zero, y: zero, opacity: rmFade }
     : EDIT_COLLAPSE;
-  const actionSwapT = prefersReducedMotion ? rmFade : ACTION_SWAP;
+  const actionSwapT = prefersReducedMotion ? { opacity: rmFade, y: zero } : ACTION_SWAP;
 
   // Keyboard focus management: entering edit mode moves focus to the
   // first editable field; leaving edit mode (Save/Cancel/Esc via close)
