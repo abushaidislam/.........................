@@ -15,8 +15,7 @@
 
 import { useEffect, useState } from "react";
 import { VAULT_CRYPTO_VERSION } from "@/lib/vault-crypto";
-import { readVaultCache } from "@/lib/vault-cache";
-import { isBiometricAvailable } from "@/lib/biometric";
+import { isBiometricSupported } from "@/lib/biometric";
 
 // Touch vault-accounts so bundler resolution is proven at build time
 // without executing any Supabase network call in the popup shell.
