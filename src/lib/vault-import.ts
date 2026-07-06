@@ -373,14 +373,19 @@ export async function importFromAvf(
   passphrase: string,
 ): Promise<ImportResult> {
   const accounts = await decryptExportedFile(file, passphrase);
-  const entries: ParsedOtpauth[] = accounts.map((a) => ({
-    issuer: (a.issuer || a.label || "Unknown").trim(),
-    label: (a.label || "").trim(),
-    secret: a.secret.replace(/\s+/g, "").toUpperCase(),
-    algorithm: normalizeAlgo(a.algorithm),
-    digits: a.digits ?? 6,
-    period: a.period ?? 30,
-  }));
+  const entries: ParsedOtpauth[] = accounts.map((a) => {
+    const otp_type = (a.otp_type ?? "totp") as "totp" | "hotp" | "steam";
+    return {
+      issuer: (a.issuer || a.label || "Unknown").trim(),
+      label: (a.label || "").trim(),
+      secret: a.secret.replace(/\s+/g, "").toUpperCase(),
+      algorithm: otp_type === "steam" ? "SHA1" : normalizeAlgo(a.algorithm),
+      digits: otp_type === "steam" ? 5 : a.digits ?? 6,
+      period: otp_type === "steam" ? 30 : a.period ?? 30,
+      otp_type,
+      ...(otp_type === "hotp" ? { counter: a.counter ?? 0 } : {}),
+    };
+  });
   return { source: "avf", entries, skipped: 0 };
 }
 
