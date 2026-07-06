@@ -29,6 +29,24 @@ import { TagChip, TagInput } from "@/components/vault/tags";
 const DANGER = "#b23a2a";
 const FAV = "#c99a2b";
 
+// Shared edit-mode motion. iOS-style ease with a slightly longer collapse
+// than expand so exit feels intentional, not abrupt. Opacity resolves a hair
+// before height so content doesn't clip mid-fade.
+const EDIT_EASE = [0.32, 0.72, 0, 1] as const;
+const EDIT_EXPAND = {
+  height: { duration: 0.28, ease: EDIT_EASE },
+  opacity: { duration: 0.2, ease: EDIT_EASE, delay: 0.04 },
+  y: { duration: 0.28, ease: EDIT_EASE },
+  marginBottom: { duration: 0.28, ease: EDIT_EASE },
+};
+const EDIT_COLLAPSE = {
+  height: { duration: 0.24, ease: EDIT_EASE, delay: 0.04 },
+  opacity: { duration: 0.16, ease: EDIT_EASE },
+  y: { duration: 0.2, ease: EDIT_EASE },
+  marginBottom: { duration: 0.24, ease: EDIT_EASE, delay: 0.04 },
+};
+const ACTION_SWAP = { duration: 0.22, ease: EDIT_EASE } as const;
+
 // Dedupe toast per issuer so the same failing logo doesn't spam notifications.
 const notifiedIssuers = new Set<string>();
 function notifyLogoIssue(issuer: string, reason: "unmapped" | "error") {
@@ -1079,10 +1097,10 @@ export function AccountCard({
                       {editing && (
                         <motion.div
                           key="tags-editor"
-                          initial={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
+                          initial={{ opacity: 0, height: 0, marginBottom: 0, y: -4 }}
                           animate={{ opacity: 1, height: "auto", marginBottom: 12, y: 0 }}
-                          exit={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
-                          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                          exit={{ opacity: 0, height: 0, marginBottom: 0, y: -4, transition: EDIT_COLLAPSE }}
+                          transition={EDIT_EXPAND}
                           style={{ overflow: "hidden" }}
                         >
                           <div
@@ -1175,10 +1193,10 @@ export function AccountCard({
                       {editing && (
                         <motion.div
                           key="edit-hint"
-                          initial={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
+                          initial={{ opacity: 0, height: 0, marginBottom: 0, y: -4 }}
                           animate={{ opacity: 1, height: "auto", marginBottom: 16, y: 0 }}
-                          exit={{ opacity: 0, height: 0, marginBottom: 0, y: -6 }}
-                          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                          exit={{ opacity: 0, height: 0, marginBottom: 0, y: -4, transition: EDIT_COLLAPSE }}
+                          transition={EDIT_EXPAND}
                           style={{ overflow: "hidden" }}
                         >
                           <div
@@ -1226,10 +1244,10 @@ export function AccountCard({
                       {editing ? (
                         <motion.div
                           key="actions-editing"
-                          initial={{ opacity: 0, y: 8 }}
+                          initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={ACTION_SWAP}
                           className="grid grid-cols-[1fr_auto] gap-2 pb-1"
                         >
                           <motion.button
@@ -1275,10 +1293,10 @@ export function AccountCard({
                       ) : (
                         <motion.div
                           key="actions-idle"
-                          initial={{ opacity: 0, y: 8 }}
+                          initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={ACTION_SWAP}
                           className="grid grid-cols-2 gap-2 pb-1"
                         >
                           <motion.button
