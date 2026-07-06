@@ -525,11 +525,14 @@ function VaultPage() {
   return (
     <>
       <LargeTitle
-        title="Your codes"
+        title={t("vault.title", "Your codes")}
         subtitle={
           accounts && accounts.length > 0
-            ? `${accounts.length} ${accounts.length === 1 ? "account" : "accounts"} · tap to copy`
-            : "One-time codes, encrypted end-to-end."
+            ? (accounts.length === 1
+                ? t("vault.subtitle.count.one", "{count} account · tap to copy")
+                : t("vault.subtitle.count.other", "{count} accounts · tap to copy")
+              ).replace("{count}", String(accounts.length))
+            : t("vault.subtitle.empty", "One-time codes, encrypted end-to-end.")
         }
       />
 
