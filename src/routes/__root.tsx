@@ -156,23 +156,36 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  // `suppressHydrationWarning` is required on <html> and <body> because the
+  // pre-hydration boot scripts below intentionally mutate them before React
+  // hydrates: THEME_INIT_SCRIPT toggles the `dark` class + `style.colorScheme`
+  // on <html>, and LOCALE_INIT_SCRIPT rewrites `<html lang>`. Without this,
+  // React logs a noisy hydration-mismatch warning on every page load and
+  // after every locale/theme change that navigates.
   return (
-    <html lang="en">
-      <head>
+    <html lang="en" suppressHydrationWarning>
+      <head suppressHydrationWarning>
         {/* Applied pre-hydration so first paint matches the user's saved
             theme + locale — prevents a light-mode flash and mismatched
             <html lang> before React mounts. */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-        <script dangerouslySetInnerHTML={{ __html: LOCALE_INIT_SCRIPT }} />
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: LOCALE_INIT_SCRIPT }}
+        />
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <Scripts />
       </body>
     </html>
   );
 }
+
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
