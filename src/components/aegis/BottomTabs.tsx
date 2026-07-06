@@ -32,6 +32,11 @@ function isActive(pathname: string, to: string) {
  */
 export function BottomTabs() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { i18n } = useLingui();
+  const t = (id: string, fallback: string) => {
+    const msg = i18n._(id);
+    return msg === id ? fallback : msg;
+  };
 
   return (
     <motion.nav
