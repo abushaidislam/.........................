@@ -461,13 +461,36 @@ export async function flushPendingTagUpdates(): Promise<number> {
 }
 
 /**
- * Flush queued delete + edit mutations against the server. Returns the
- * count that reached the server. Safe to call repeatedly; missing-row
- * errors are treated as success (intent satisfied).
+ * Flush every queued mutation (create / delete / update / favorite)
+ * against the server in enqueue order. Returns the count that reached
+ * the server. Safe to call repeatedly; missing-row errors are treated
+ * as success (intent satisfied). Failed entries stay queued.
  */
 export async function flushPendingOutbox(): Promise<number> {
   if (isOffline()) return 0;
   const flushed = await flushOutbox({
+    create: async (clientId, payload) => {
+      const { data, error } = await supabase
+        .from("vault_accounts")
+        .insert({
+          id: clientId,
+          user_id: payload.userId,
+          issuer: payload.issuer,
+          label: payload.label,
+          icon_slug: payload.icon_slug,
+          algorithm: payload.algorithm,
+          digits: payload.digits,
+          period: payload.period,
+          tags: payload.tags,
+          is_favorite: payload.is_favorite,
+          secret_ciphertext: payload.secret_ciphertext_hex,
+          secret_iv: payload.secret_iv_hex,
+        })
+        .select(ACCOUNT_SELECT)
+        .single();
+      if (error) throw error;
+      if (data) void upsertVaultCache(data as VaultAccountRecord);
+    },
     delete: async (id) => {
       const { error } = await supabase.from("vault_accounts").delete().eq("id", id);
       if (error) throw error;
@@ -482,6 +505,20 @@ export async function flushPendingOutbox(): Promise<number> {
         .single();
       if (error) throw error;
       if (data) void upsertVaultCache(data as VaultAccountRecord);
+    },
+    favorite: async (id, isFavorite) => {
+      const { data, error } = await supabase
+        .from("vault_accounts")
+        .update({ is_favorite: isFavorite })
+        .eq("id", id)
+        .select(ACCOUNT_SELECT + ", user_id")
+        .single();
+      if (error) throw error;
+      if (data) {
+        const row = data as unknown as VaultAccountRecord & { user_id: string };
+        void upsertVaultCache(row);
+        clearFavoriteToggle(row.user_id, id);
+      }
     },
   });
   return flushed.length;
