@@ -8,6 +8,7 @@ import { decryptSecret, encryptSecret, toBytes, toByteaHex } from "@/lib/vault-c
 import {
   clearFavoriteToggle,
   isOffline,
+  patchCacheSortOrders,
   readLastSync,
   readRecentFavoriteToggles,
   readVaultCache,
