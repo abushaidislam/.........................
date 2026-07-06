@@ -76,7 +76,7 @@ export function VaultHealthSection({ heading = "Vault health" }: { heading?: str
     setLoading(true);
     setErrorMsg(null);
     try {
-      const { accounts } = await listAccountsWithCache(dek);
+      const accounts = await listAccounts(dek);
       const next = await computeVaultHealth(accounts);
       setReport(next);
       const findings =
