@@ -570,7 +570,7 @@ function TypePicker({
             onClick={() => onChange(o.id)}
             className="relative flex flex-col items-center rounded-[10px] px-2 py-2 text-[11.5px] transition-colors"
             style={{
-              background: active ? "#ffffff" : "transparent",
+              background: active ? "var(--aegis-cream-soft)" : "transparent",
               border: active ? `1px solid ${BORDER}` : "1px solid transparent",
               color: active ? CHARCOAL : MUTED,
               fontWeight: active ? 600 : 500,
