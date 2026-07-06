@@ -108,10 +108,10 @@ Baseline biggest chunks (from `perf/baseline.json`):
 - [x] Manual chunk-split for the router runtime (also React, Supabase, framer-motion, icons)
 - [x] **Exit target:** main entry ≤ 250 KB gzipped — **shipped at 60 KB gzipped** (Lighthouse PWA + 3G LCP measurement pending on-device)
 
-### 6.4 Offline UX affordances `[P1]`
-- [ ] Banner "You're offline — showing cached codes" with Retry pill
-- [ ] Add / edit / delete queued in an outbox and replayed on reconnect
-- [ ] QR scanning explicitly disabled offline
+### 6.4 Offline UX affordances `[P1]` `[done]`
+- [x] Banner "You're offline — showing cached codes" with Retry pill (surfaces queued-change count on the vault screen)
+- [x] Delete + edit queued in a persistent outbox (`src/lib/vault-outbox.ts`) and auto-replayed on reconnect; tag edits keep their dedicated queue
+- [x] QR scanning explicitly disabled offline — the scan tab renders a "Scanner unavailable offline" placeholder instead of the camera
 
 **Exit criteria for Phase 6:** Aegis is installable on iOS + Android
 home screen, opens with no network, shows cached codes, replays writes
