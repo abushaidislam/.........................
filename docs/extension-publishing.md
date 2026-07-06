@@ -1,5 +1,31 @@
 # Aegis Extension — Publishing & Distribution
 
+## Store listing config (single source of truth)
+
+All URLs and justification strings the CWS / AMO forms ask for live in
+**`extension/store-listing.config.ts`**. Change a domain or policy URL there
+and every build picks it up — the manifest's `homepage_url`, the generated
+`dist-ext-meta/<target>-store-listing.json`, and this document all read the
+same values.
+
+Override any field at build time via env:
+
+| Field | Env var | Fallback |
+| --- | --- | --- |
+| Homepage | `VITE_EXT_HOMEPAGE_URL` | `VITE_APP_URL` |
+| Privacy policy | `VITE_EXT_PRIVACY_URL` | `<VITE_APP_URL>/privacy` |
+| Terms | `VITE_EXT_TERMS_URL` | `<VITE_APP_URL>/terms` |
+| Support page | `VITE_EXT_SUPPORT_URL` | `<VITE_APP_URL>/support` |
+| Support email | `VITE_EXT_SUPPORT_EMAIL` | `support@aegis.local` |
+| Source code | `VITE_EXT_SOURCE_URL` | *(empty — omit on AMO if unset)* |
+| Single purpose | `VITE_EXT_SINGLE_PURPOSE` | see config |
+| Category | `VITE_EXT_CATEGORY` | Productivity / Password Managers |
+| Reviewer notes | `VITE_EXT_REVIEWER_NOTES` | see config |
+
+After each `bun run build:ext[:firefox]`, the resolved values are dumped to
+`dist-ext-meta/<chrome|firefox>-store-listing.json` — copy fields straight
+from there into the store submission form.
+
 ## Version 0.2.0 (PR 3)
 
 **Security:**
