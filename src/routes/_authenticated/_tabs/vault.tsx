@@ -73,6 +73,7 @@ import {
   BORDER,
   CHARCOAL,
   CREAM_SOFT,
+  DANGER,
   IconChip,
   MUTED,
   Notice,
