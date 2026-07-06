@@ -205,45 +205,75 @@ export async function syncVaultToExtension(params: {
   const nextSeq = LOCAL_SYNC_SEQ + 1;
 
   for (const id of ids) {
-    const result: SendResult = await new Promise((resolve) => {
-      try {
-        runtime.sendMessage(
-          id,
-          {
-            type: "SYNC_VAULT",
-            userId: params.userId,
-            accounts: totp,
-            ttlMs: params.ttlMs,
-            syncSeq: nextSeq,
-          },
-          (res) => {
-            const err = runtime.lastError?.message;
-            if (err) {
-              resolve({ ok: false, reason: "send_failed", detail: err });
-              return;
-            }
-            if (res?.ok) {
-              const count = typeof res.accountCount === "number" ? res.accountCount : totp.length;
-              const seq = typeof res.syncSeq === "number" ? res.syncSeq : nextSeq;
-              resolve({ ok: true, accountCount: count, syncSeq: seq });
-            } else {
-              const detail = typeof res?.error === "string" ? res.error : "unknown";
-              resolve({ ok: false, reason: "send_failed", detail });
-            }
-          },
-        );
-      } catch (e) {
-        resolve({
-          ok: false,
-          reason: "send_failed",
-          detail: e instanceof Error ? e.message : "throw",
-        });
+    // Sign the payload. If we don't yet have a pairing key, fetch one.
+    // Retry once on `bad_sig` by clearing the cached key and re-fetching
+    // (SW might have regenerated on reinstall).
+    let attempt = 0;
+    let lastDetail: string | undefined;
+    while (attempt < 2) {
+      const pairingKey = await ensurePairingKey(runtime, id);
+      if (!pairingKey) {
+        lastDetail = "no_pairing_key";
+        break;
       }
-    });
-    if (result.ok) {
-      LOCAL_SYNC_SEQ = nextSeq;
-      return result;
+      const ts = Date.now();
+      const nonce = randomNonce();
+      const accountsDigest = await sha256Hex(JSON.stringify(totp));
+      const canonical = `SYNC_VAULT\n${params.userId}\n${nextSeq}\n${ts}\n${nonce}\n${accountsDigest}`;
+      const sig = await hmacHex(pairingKey, canonical);
+
+      const result: SendResult = await new Promise((resolve) => {
+        try {
+          runtime.sendMessage(
+            id,
+            {
+              type: "SYNC_VAULT",
+              userId: params.userId,
+              accounts: totp,
+              ttlMs: params.ttlMs,
+              syncSeq: nextSeq,
+              ts,
+              nonce,
+              sig,
+            },
+            (res) => {
+              const err = runtime.lastError?.message;
+              if (err) {
+                resolve({ ok: false, reason: "send_failed", detail: err });
+                return;
+              }
+              if (res?.ok) {
+                const count = typeof res.accountCount === "number" ? res.accountCount : totp.length;
+                const seq = typeof res.syncSeq === "number" ? res.syncSeq : nextSeq;
+                resolve({ ok: true, accountCount: count, syncSeq: seq });
+              } else {
+                const detail = typeof res?.error === "string" ? res.error : "unknown";
+                resolve({ ok: false, reason: "send_failed", detail });
+              }
+            },
+          );
+        } catch (e) {
+          resolve({
+            ok: false,
+            reason: "send_failed",
+            detail: e instanceof Error ? e.message : "throw",
+          });
+        }
+      });
+      if (result.ok) {
+        LOCAL_SYNC_SEQ = nextSeq;
+        return result;
+      }
+      lastDetail = result.detail;
+      // Only retry if the SW says our HMAC or pairing state is off.
+      if (result.detail === "bad_sig" || result.detail === "unsigned") {
+        clearPairing(id);
+        attempt += 1;
+        continue;
+      }
+      break;
     }
+    if (lastDetail) return { ok: false, reason: "send_failed", detail: lastDetail };
   }
   return { ok: false, reason: "send_failed" };
 }
