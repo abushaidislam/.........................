@@ -222,19 +222,35 @@ export async function addAccount(
     period?: number;
     icon_slug?: string | null;
     tags?: string[];
+    otp_type?: OtpType;
+    counter?: number;
   },
 ): Promise<{ queued: boolean }> {
   const clean = normalizeBase32(input.secret);
   if (!isValidBase32Secret(clean)) throw new Error("Invalid secret. Must be base32.");
 
+  const otp_type: OtpType = input.otp_type ?? "totp";
+  // Steam has fixed shape; ignore any overrides so we can't store a
+  // mis-configured row that generateSteamCode would then misinterpret.
+  const algorithm: Algorithm = otp_type === "steam" ? "SHA1" : input.algorithm ?? "SHA1";
+  const digits = otp_type === "steam" ? 5 : input.digits ?? 6;
+  const period = otp_type === "steam" ? 30 : otp_type === "hotp" ? 30 : input.period ?? 30;
+
   const { ciphertext, iv } = await encryptSecret(dek, clean);
   const tags = normalizeTagList(input.tags ?? []);
   const issuer = input.issuer.trim();
   const label = input.label.trim();
-  const algorithm = input.algorithm ?? "SHA1";
-  const digits = input.digits ?? 6;
-  const period = input.period ?? 30;
   const icon_slug = input.icon_slug ?? null;
+
+  // HOTP counter is encrypted client-side — server never sees the value.
+  let counterCiphertextHex: string | null = null;
+  let counterIvHex: string | null = null;
+  if (otp_type === "hotp") {
+    const startCounter = Math.max(0, Math.floor(input.counter ?? 0));
+    const enc = await encryptSecret(dek, String(startCounter));
+    counterCiphertextHex = toByteaHex(enc.ciphertext);
+    counterIvHex = toByteaHex(enc.iv);
+  }
 
   const insertRow = {
     user_id: userId,
@@ -247,6 +263,9 @@ export async function addAccount(
     tags,
     secret_ciphertext: toByteaHex(ciphertext),
     secret_iv: toByteaHex(iv),
+    otp_type,
+    counter_ciphertext: counterCiphertextHex,
+    counter_iv: counterIvHex,
   };
 
   const enqueueOfflineCreate = async () => {
@@ -266,6 +285,9 @@ export async function addAccount(
       is_favorite: false,
       secret_ciphertext_hex: toByteaHex(ciphertext),
       secret_iv_hex: toByteaHex(iv),
+      otp_type,
+      counter_ciphertext_hex: counterCiphertextHex,
+      counter_iv_hex: counterIvHex,
     };
     enqueueCreate(clientId, payload);
     const cachedRow: VaultAccountRecord = {
@@ -281,6 +303,9 @@ export async function addAccount(
       tags,
       secret_ciphertext: toByteaHex(ciphertext),
       secret_iv: toByteaHex(iv),
+      otp_type,
+      counter_ciphertext: counterCiphertextHex,
+      counter_iv: counterIvHex,
       updated_at: new Date().toISOString(),
     };
     await upsertVaultCache(cachedRow);
@@ -308,6 +333,64 @@ export async function addAccount(
     throw err;
   }
 }
+
+/**
+ * Advance the HOTP counter for an account and persist the new (encrypted)
+ * value. Server never sees the counter in plaintext. Returns the new
+ * counter number so the caller can re-render immediately.
+ *
+ * Offline: patches the local cache only; the change survives a reload but
+ * won't reach the server until the user is online (HOTP counters aren't
+ * routed through the outbox — a stale server counter self-corrects on the
+ * next successful advance).
+ */
+export async function advanceHotpCounter(
+  dek: CryptoKey,
+  id: string,
+  currentCounter: number,
+): Promise<{ counter: number; queued: boolean }> {
+  const next = Math.max(0, Math.floor(currentCounter)) + 1;
+  const { ciphertext, iv } = await encryptSecret(dek, String(next));
+  const counter_ciphertext = toByteaHex(ciphertext);
+  const counter_iv = toByteaHex(iv);
+
+  const patchCache = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const rows = await readVaultCache(user.id);
+      const row = rows?.find((r) => r.id === id);
+      if (!row) return;
+      await upsertVaultCache({ ...row, counter_ciphertext, counter_iv });
+    } catch {
+      /* best-effort */
+    }
+  };
+
+  if (isOffline()) {
+    await patchCache();
+    return { counter: next, queued: true };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("vault_accounts")
+      .update({ counter_ciphertext, counter_iv })
+      .eq("id", id)
+      .select(ACCOUNT_SELECT)
+      .single();
+    if (error) throw error;
+    if (data) void upsertVaultCache(data as VaultAccountRecord);
+    return { counter: next, queued: false };
+  } catch (err) {
+    if (isLikelyNetworkError(err)) {
+      await patchCache();
+      return { counter: next, queued: true };
+    }
+    throw err;
+  }
+}
+
 
 function generateClientId(): string {
   const g = globalThis as { crypto?: { randomUUID?: () => string } };
