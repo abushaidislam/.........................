@@ -75,9 +75,11 @@ export async function subscribeToPush(
 
   let sub: PushSubscription;
   try {
+    const appServerKey = b64urlToUint8Array(vapid);
     sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: b64urlToUint8Array(vapid),
+      // Copy into a fresh ArrayBuffer so TS doesn't widen to SharedArrayBuffer.
+      applicationServerKey: appServerKey.slice().buffer,
     });
   } catch (e) {
     return {
@@ -105,7 +107,10 @@ export function usePushSubscribe() {
   const register = useServerFn(registerPushSubscription);
   const unregister = useServerFn(unregisterPushSubscription);
   return {
-    subscribe: () => subscribeToPush(register),
+    subscribe: () =>
+      subscribeToPush(async (input) => {
+        await register({ data: input });
+      }),
     unsubscribe: async (): Promise<{ ok: boolean }> => {
       if (typeof window === "undefined" || !("serviceWorker" in navigator))
         return { ok: false };
