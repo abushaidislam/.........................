@@ -732,14 +732,8 @@ export function AccountCard({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.18 }}
-                className="text-[26px] leading-none tabular-nums"
-                style={{
-                  color: warn ? DANGER : CHARCOAL,
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  fontFeatureSettings: "'tnum'",
-                  fontWeight: 600,
-                  letterSpacing: "0.06em",
-                }}
+                className="tabular-nums"
+                style={{ ...typeCode, color: warn ? DANGER : CHARCOAL }}
               >
                 {formatCode(code)}
               </motion.div>
@@ -754,12 +748,8 @@ export function AccountCard({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85 }}
                 transition={{ type: "spring", stiffness: 500, damping: 26 }}
-                className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px]"
-                style={{
-                  color: CREAM_SOFT,
-                  background: CHARCOAL,
-                  fontWeight: 500,
-                }}
+                className="flex items-center gap-1 rounded-full px-2 py-0.5"
+                style={{ ...typeBadge, background: CHARCOAL, fontWeight: 500 }}
               >
                 <Check className="h-3 w-3" strokeWidth={2.4} />
                 Copied
@@ -772,18 +762,13 @@ export function AccountCard({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18 }}
                 className="flex items-baseline gap-1.5 tabular-nums"
-                style={{
-                  color: MUTED,
-                  fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-                  fontFeatureSettings: "'tnum'",
-                  fontSize: 11,
-                  letterSpacing: "0.05em",
-                }}
+                style={{ ...typeCodeNext, color: MUTED, fontWeight: 400 }}
                 aria-label={`Next code ${nextCode}`}
               >
                 <span style={{ opacity: 0.7 }}>next</span>
                 <span style={{ color: CHARCOAL, fontWeight: 600 }}>{formatCode(nextCode)}</span>
               </motion.div>
+
             ) : (
               <motion.div
                 key="copy"
