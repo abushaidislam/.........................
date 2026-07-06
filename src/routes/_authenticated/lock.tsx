@@ -45,12 +45,30 @@ const searchSchema = z.object({ redirect: z.string().optional() });
 
 export const Route = createFileRoute("/_authenticated/lock")({
   validateSearch: searchSchema,
+  head: () => ({
+    meta: [
+      { title: "Unlock your Aegis vault" },
+      {
+        name: "description",
+        content:
+          "Enter your passphrase to decrypt your TOTP codes locally on this device.",
+      },
+      { name: "robots", content: "noindex, nofollow" },
+      { property: "og:title", content: "Unlock your Aegis vault" },
+      {
+        property: "og:description",
+        content: "Passphrase gate that unlocks your Aegis vault on this device.",
+      },
+      { property: "og:url", content: "https://hug-machine-maker.lovable.app/lock" },
+    ],
+  }),
   component: LockPage,
   errorComponent: ({ error }) => (
     <div className="flex min-h-screen items-center justify-center p-6 text-sm">{error.message}</div>
   ),
   notFoundComponent: () => <div className="p-6 text-sm">Not found</div>,
 });
+
 
 type Mode = "loading" | "create" | "unlock";
 

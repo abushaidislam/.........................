@@ -63,12 +63,30 @@ export const Route = createFileRoute("/_authenticated/_tabs/security")({
       throw redirect({ to: "/lock", search: { redirect: location.href } });
     }
   },
+  head: () => ({
+    meta: [
+      { title: "Security — Aegis" },
+      {
+        name: "description",
+        content:
+          "Change your passphrase, review recovery, and export an encrypted backup of your Aegis vault.",
+      },
+      { name: "robots", content: "noindex, nofollow" },
+      { property: "og:title", content: "Security — Aegis" },
+      {
+        property: "og:description",
+        content: "Passphrase, recovery, and encrypted backup for your Aegis vault.",
+      },
+      { property: "og:url", content: "https://hug-machine-maker.lovable.app/security" },
+    ],
+  }),
   component: SecurityPage,
   errorComponent: ({ error }) => (
     <div className="flex min-h-screen items-center justify-center p-6 text-sm">{error.message}</div>
   ),
   notFoundComponent: () => <div className="p-6 text-sm">Not found</div>,
 });
+
 
 function autoLockLabel(ms: number | null): string {
   const opt = AUTO_LOCK_OPTIONS.find((o) => o.value === ms);
