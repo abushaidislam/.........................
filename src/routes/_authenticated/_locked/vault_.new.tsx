@@ -297,7 +297,7 @@ function SegButton({
   );
 }
 
-function ScanTab({
+export function ScanTab({
   onDetected,
   onError,
   saving,
