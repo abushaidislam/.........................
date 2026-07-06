@@ -486,10 +486,21 @@ function ProfilePage() {
             onClose={() => setAvatarSheet(false)}
           />
         )}
+        {themeSheet && (
+          <ThemeSheet
+            value={themePref}
+            onChoose={(p) => {
+              chooseTheme(p);
+              setThemeSheet(false);
+            }}
+            onClose={() => setThemeSheet(false)}
+          />
+        )}
       </AnimatePresence>
     </>
   );
 }
+
 
 function ThemeRow({
   icon,
