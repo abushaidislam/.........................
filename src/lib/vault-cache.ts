@@ -108,6 +108,31 @@ export async function upsertVaultCache(row: VaultAccountRecord): Promise<void> {
   }
 }
 
+/**
+ * Patch `sort_order` for a batch of rows in-place. Used by the DnD reorder
+ * flow so the offline mirror survives across reloads without waiting for
+ * the next server sync. Rows that don't exist in the cache are skipped —
+ * the next full sync will heal them.
+ */
+export async function patchCacheSortOrders(
+  updates: Array<{ id: string; sort_order: number }>,
+): Promise<void> {
+  if (updates.length === 0) return;
+  try {
+    const db = await getDb();
+    const tx = db.transaction(STORE, "readwrite");
+    const store = tx.objectStore(STORE);
+    for (const u of updates) {
+      const existing = await store.get(u.id);
+      if (existing) await store.put({ ...existing, sort_order: u.sort_order });
+    }
+    await tx.done;
+  } catch {
+    // best-effort
+  }
+}
+
+
 /** Nuke everything. Called on sign-out and delete-account. */
 export async function clearVaultCache(): Promise<void> {
   try {

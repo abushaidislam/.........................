@@ -8,6 +8,7 @@ import { decryptSecret, encryptSecret, toBytes, toByteaHex } from "@/lib/vault-c
 import {
   clearFavoriteToggle,
   isOffline,
+  patchCacheSortOrders,
   readLastSync,
   readRecentFavoriteToggles,
   readVaultCache,
@@ -685,5 +686,29 @@ export async function getLastSyncedAt(userId: string): Promise<string | null> {
   return readLastSync(userId);
 }
 
-
+/**
+ * Phase 7.2 — persist a drag-and-drop reorder.
+ *
+ * Callers pass the full ordered id list for one visual group (favorites
+ * OR everything-else). We reassign `sort_order` densely from 0 and push
+ * each row in parallel via targeted UPDATEs — RLS ensures the caller can
+ * only touch their own rows. The IndexedDB mirror is patched in the same
+ * batch so the new order survives a reload before the next sync.
+ *
+ * Skips the server hop when offline: local state stays intact for the
+ * session and the next server sync will overwrite `sort_order`. The
+ * caller (VaultPage) gates DnD activation on `online`, so this is a
+ * belt-and-braces guard.
+ */
+export async function reorderAccounts(orderedIds: string[]): Promise<void> {
+  if (orderedIds.length === 0) return;
+  const updates = orderedIds.map((id, index) => ({ id, sort_order: index }));
+  await patchCacheSortOrders(updates);
+  if (isOffline()) return;
+  await Promise.all(
+    updates.map(({ id, sort_order }) =>
+      supabase.from("vault_accounts").update({ sort_order }).eq("id", id),
+    ),
+  );
+}
 
