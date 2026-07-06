@@ -261,25 +261,55 @@ export async function deleteAccount(id: string): Promise<{ queued: boolean }> {
   }
 }
 
-export async function setAccountFavorite(id: string, isFavorite: boolean): Promise<void> {
-  // Phase 6.2: record the toggle so an in-flight diff-sync doesn't
-  // clobber it with the pre-toggle server value. Best-effort — resolves
-  // the user_id from the account row we're about to write.
-  const { data, error } = await supabase
-    .from("vault_accounts")
-    .update({ is_favorite: isFavorite })
-    .eq("id", id)
-    .select(ACCOUNT_SELECT + ", user_id")
-    .single();
-  if (error) throw error;
-  if (data) {
-    const row = data as unknown as VaultAccountRecord & { user_id: string };
-    void upsertVaultCache(row);
-    recordFavoriteToggle(row.user_id, id, isFavorite);
-    // The server has confirmed our value — the optimistic-window entry
-    // has done its job for future syncs but we can drop it now that
-    // the cached row already carries the confirmed value.
-    clearFavoriteToggle(row.user_id, id);
+export async function setAccountFavorite(
+  id: string,
+  isFavorite: boolean,
+): Promise<{ queued: boolean }> {
+  const attempt = async () => {
+    const { data, error } = await supabase
+      .from("vault_accounts")
+      .update({ is_favorite: isFavorite })
+      .eq("id", id)
+      .select(ACCOUNT_SELECT + ", user_id")
+      .single();
+    if (error) throw error;
+    if (data) {
+      const row = data as unknown as VaultAccountRecord & { user_id: string };
+      void upsertVaultCache(row);
+      recordFavoriteToggle(row.user_id, id, isFavorite);
+      clearFavoriteToggle(row.user_id, id);
+    }
+  };
+
+  const patchCacheFavorite = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const rows = await readVaultCache(user.id);
+      const row = rows?.find((r) => r.id === id);
+      if (row) await upsertVaultCache({ ...row, is_favorite: isFavorite });
+      recordFavoriteToggle(user.id, id, isFavorite);
+    } catch {
+      // best-effort
+    }
+  };
+
+  if (isOffline()) {
+    enqueueFavorite(id, isFavorite);
+    await patchCacheFavorite();
+    return { queued: true };
+  }
+
+  try {
+    await attempt();
+    return { queued: false };
+  } catch (err) {
+    if (isLikelyNetworkError(err)) {
+      enqueueFavorite(id, isFavorite);
+      await patchCacheFavorite();
+      return { queued: true };
+    }
+    throw err;
   }
 }
 
