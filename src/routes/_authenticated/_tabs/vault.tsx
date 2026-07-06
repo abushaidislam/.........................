@@ -150,8 +150,21 @@ function VaultPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await deleteAccount(id);
+    // Optimistic remove — deleteAccount patches the cache too, and when
+    // offline it queues the DELETE for reconnect.
     setAccounts((prev) => (prev ? prev.filter((a) => a.id !== id) : prev));
+    try {
+      const { queued } = await deleteAccount(id);
+      if (queued) {
+        setPendingOutbox(pendingOutboxCount());
+        toast("Deletion queued — will sync when you're back online.");
+      }
+    } catch (err) {
+      // Server rejected the delete for a non-network reason — surface it
+      // and force a reload so the UI matches the server.
+      setError(err instanceof Error ? err.message : "Could not delete.");
+      setReloadKey((k) => k + 1);
+    }
   };
 
   useEffect(() => {
