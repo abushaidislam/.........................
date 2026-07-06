@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import type { IScannerControls } from "@zxing/browser";
 import { Loader2, Camera, ImageUp } from "lucide-react";
-import { BORDER, CHARCOAL, CREAM_SOFT, MUTED } from "@/components/aegis/chrome";
+import { BORDER, CHARCOAL, CREAM_SOFT, MUTED, SCANNER_BG, SUCCESS, WARNING } from "@/components/aegis/chrome";
 
 export interface ScanTabProps {
   onDetected: (uri: string) => void;
