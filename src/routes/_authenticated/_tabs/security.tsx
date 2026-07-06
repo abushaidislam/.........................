@@ -15,6 +15,7 @@ import {
   EyeOff,
   Fingerprint,
   Download,
+  Monitor,
 } from "lucide-react";
 
 import { Switch } from "@/components/ui/switch";
