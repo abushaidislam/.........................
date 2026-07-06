@@ -12,6 +12,9 @@ import { act } from "react";
 import { render, cleanup } from "@testing-library/react";
 import { ScanTab } from "./ScanTab";
 
+// Silence the "not configured to support act(...)" warning from happy-dom.
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
 type DecodeCb = (result: { getText: () => string } | null) => void;
 
 interface DecodeCall {
