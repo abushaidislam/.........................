@@ -1095,14 +1095,12 @@ export function AccountCard({
                     {/* Tags editor — only visible inside edit mode */}
                     <AnimatePresence initial={false}>
                       {editing && (
-                         <motion.div
+                        <motion.div
                           key="tags-editor"
                           initial={{ opacity: 0, height: 0, marginBottom: 0, y: -4 }}
                           animate={{ opacity: 1, height: "auto", marginBottom: 12, y: 0 }}
                           exit={{ opacity: 0, height: 0, marginBottom: 0, y: -4, transition: EDIT_COLLAPSE }}
                           transition={EDIT_EXPAND}
-                          style={{ overflow: "hidden" }}
-                        >
                           style={{ overflow: "hidden" }}
                         >
                           <div
