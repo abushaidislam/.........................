@@ -1336,10 +1336,11 @@ export function AccountCard({
                           initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
-                          transition={ACTION_SWAP}
+                          transition={actionSwapT}
                           className="grid grid-cols-2 gap-2 pb-1"
                         >
                           <motion.button
+                            ref={editButtonRef}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => {
                               setEditing(true);
