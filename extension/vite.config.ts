@@ -108,6 +108,23 @@ function extensionManifestPlugin() {
 
       // @ts-expect-error - rollup plugin context is untyped here
       this.emitFile({ type: "asset", fileName: "manifest.json", source: rendered });
+
+      // Write the store-listing metadata OUTSIDE the extension bundle
+      // (stores reject unexpected files inside the zip). CI + humans read
+      // this to fill out CWS / AMO forms without re-typing URLs.
+      try {
+        fs.mkdirSync(META_DIR, { recursive: true });
+        fs.writeFileSync(
+          path.join(META_DIR, `${TARGET}-store-listing.json`),
+          JSON.stringify(
+            { target: TARGET, version: parsedBase.version, ...storeListing },
+            null,
+            2,
+          ),
+        );
+      } catch (err) {
+        console.warn("[aegis-ext] failed to write store-listing meta:", err);
+      }
     },
   };
 }
