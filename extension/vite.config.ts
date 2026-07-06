@@ -74,6 +74,12 @@ function extensionManifestPlugin() {
         .replaceAll("__APP_ORIGIN__", APP_ORIGIN)
         .replaceAll("__APP_PREVIEW_ORIGIN__", APP_PREVIEW_ORIGIN);
 
+      // Inject store-listing homepage URL so `chrome://extensions` and AMO
+      // both show a working "Homepage" link. Sourced from store-listing.config.ts.
+      const parsedBase = JSON.parse(rendered);
+      parsedBase.homepage_url = storeListing.homepageUrl;
+      rendered = JSON.stringify(parsedBase, null, 2);
+
       if (TARGET === "firefox") {
         const parsed = JSON.parse(rendered);
         // Firefox MV3: classic background scripts, no `type: module`.
