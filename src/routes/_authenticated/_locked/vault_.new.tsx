@@ -76,6 +76,8 @@ function NewAccountPage() {
       digits?: number;
       period?: number;
       tags?: string[];
+      otp_type?: OtpType;
+      counter?: number;
     }): Promise<boolean> => {
       const key = getVaultKey();
       if (!key) {
