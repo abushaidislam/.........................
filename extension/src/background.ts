@@ -198,6 +198,12 @@ function handle(msg: Message, sender: chrome.runtime.MessageSender): Response {
         unlocked: unlockedNow,
         accountCount: unlockedNow ? unlocked!.accounts.length : 0,
         expiresAt: unlockedNow ? unlocked!.expiresAt : 0,
+        // syncSeq lets the web app detect a stale extension cache without
+        // shipping any account contents — it's just a monotonic counter
+        // the web app owns. Zero means "never synced this SW lifetime".
+        syncSeq: unlockedNow ? unlocked!.syncSeq : 0,
+        syncedAt: unlockedNow ? unlocked!.syncedAt : 0,
+        userId: unlockedNow ? unlocked!.userId : "",
       };
     }
 
@@ -211,6 +217,21 @@ function handle(msg: Message, sender: chrome.runtime.MessageSender): Response {
       }
       if (!Array.isArray(msg.accounts)) return { ok: false, error: "bad_payload" };
       if (msg.accounts.length > MAX_ACCOUNTS) return { ok: false, error: "too_many_accounts" };
+      // Optional syncSeq: must be a finite non-negative integer if present.
+      // The web app increments this per push so a heartbeat GET_STATE can
+      // detect that the extension is running with a stale vault.
+      let seq = 0;
+      if (msg.syncSeq !== undefined) {
+        if (
+          typeof msg.syncSeq !== "number" ||
+          !Number.isFinite(msg.syncSeq) ||
+          msg.syncSeq < 0 ||
+          !Number.isInteger(msg.syncSeq)
+        ) {
+          return { ok: false, error: "bad_sync_seq" };
+        }
+        seq = msg.syncSeq;
+      }
       // Validate every row; reject the whole batch on any failure so we
       // never store a partially-corrupt vault.
       const cleaned: ExtAccount[] = [];
@@ -219,12 +240,15 @@ function handle(msg: Message, sender: chrome.runtime.MessageSender): Response {
         cleaned.push(raw);
       }
       const ttl = Math.min(Math.max(msg.ttlMs ?? IDLE_LOCK_MS, 30_000), IDLE_LOCK_MS);
+      const now = Date.now();
       unlocked = {
         accounts: cleaned,
         userId: msg.userId,
-        expiresAt: Date.now() + ttl,
+        expiresAt: now + ttl,
+        syncedAt: now,
+        syncSeq: seq,
       };
-      return { ok: true, accountCount: cleaned.length };
+      return { ok: true, accountCount: cleaned.length, syncSeq: seq, syncedAt: now };
     }
 
 
