@@ -397,11 +397,11 @@ function ManualTab({
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-1">
-      <SectionLabel>Code type</SectionLabel>
+      <SectionLabel>{t("add.section.codeType", "Code type")}</SectionLabel>
       <TypePicker value={otpType} onChange={setOtpType} />
 
       <div className="pt-3">
-        <SectionLabel>Account</SectionLabel>
+        <SectionLabel>{t("add.section.account", "Account")}</SectionLabel>
         <SettingsGroup>
           <FieldRow
             label="Issuer"
@@ -420,7 +420,7 @@ function ManualTab({
       </div>
 
       <div className="pt-3">
-        <SectionLabel>Secret</SectionLabel>
+        <SectionLabel>{t("add.section.secret", "Secret")}</SectionLabel>
         <SettingsGroup>
           <FieldRow
             label="Secret key"
@@ -443,7 +443,7 @@ function ManualTab({
       </div>
 
       <div className="pt-3">
-        <SectionLabel>Tags · optional</SectionLabel>
+        <SectionLabel>{t("add.section.tags", "Tags · optional")}</SectionLabel>
         <TagInput value={tags} onChange={setTags} placeholder="work, personal, finance…" />
       </div>
 
