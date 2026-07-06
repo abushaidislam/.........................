@@ -61,6 +61,11 @@ function NewAccountPage() {
   const { user } = Route.useRouteContext();
   const { uri: incomingUri } = Route.useSearch();
   const [tab, setTab] = useState<Tab>("scan");
+  const { i18n } = useLingui();
+  const t = (id: string, fallback: string) => {
+    const msg = i18n._(id);
+    return msg === id ? fallback : msg;
+  };
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ kind: "error" | "info"; text: string } | null>(null);
   // Bumped when a QR-triggered save fails so ScanTab can fully re-mount the
