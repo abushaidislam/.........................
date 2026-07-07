@@ -67,6 +67,14 @@ import {
 } from "@/lib/biometric";
 import { listAccounts } from "@/lib/vault-accounts";
 import { buildEncryptedExport, downloadExport } from "@/lib/vault-export";
+import {
+  deleteCloudBackup,
+  formatBackupSize,
+  listCloudBackups,
+  restoreCloudBackup,
+  uploadCloudBackup,
+  type CloudBackupEntry,
+} from "@/lib/vault-cloud-backup";
 
 export const Route = createFileRoute("/_authenticated/_tabs/security")({
   beforeLoad: ({ location }) => {
