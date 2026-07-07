@@ -467,10 +467,15 @@ function LockPage() {
               loading={loading}
               disabled={
                 !passphrase ||
+                (!isCreate && cooldownLeft > 0) ||
                 (isCreate && (scoreStrength(passphrase) < 2 || passphrase !== confirmPass))
               }
             >
-              {isCreate ? "Create vault" : "Unlock"}
+              {isCreate
+                ? "Create vault"
+                : cooldownLeft > 0
+                  ? `Wait ${Math.ceil(cooldownLeft / 1000)}s`
+                  : "Unlock"}
             </PrimaryButton>
           </div>
 
