@@ -1,11 +1,30 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Puzzle, Chrome, Globe, Flame, ChevronDown, ExternalLink, CheckCircle2 } from "lucide-react";
+import {
+  Loader2,
+  Puzzle,
+  Chrome,
+  Globe,
+  Flame,
+  ChevronDown,
+  ExternalLink,
+  CheckCircle2,
+  Activity,
+  KeyRound,
+  Keyboard,
+} from "lucide-react";
 import { SectionLabel, SettingsGroup, SettingsRow } from "@/components/aegis/settings";
 import { supabase } from "@/integrations/supabase/client";
 import { getVaultKey, isVaultUnlocked, useVaultUnlocked } from "@/lib/vault-session";
 import { readCachedAccountsOnly, syncAccountsFromServer } from "@/lib/vault-accounts";
-import { syncVaultToExtension, isExtensionInstalled } from "@/lib/extension-bridge";
+import {
+  syncVaultToExtension,
+  isExtensionInstalled,
+  pingExtensionState,
+  clearExtensionPairing,
+  getLocalSyncSeq,
+  type ExtensionState,
+} from "@/lib/extension-bridge";
 import { MUTED, CHARCOAL, BORDER } from "@/components/aegis/chrome";
 
 /**
