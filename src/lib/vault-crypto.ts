@@ -88,15 +88,19 @@ export async function createNewVaultKey(passphrase: string): Promise<{
     iv: iv as unknown as BufferSource,
   });
 
-  // Re-import DEK as non-extractable for runtime use.
+  // Re-import DEK for runtime use. Kept extractable so we can re-wrap it
+  // under a PIN/biometric wrap key (WebCrypto's wrapKey requires the wrapped
+  // key to be extractable). This does not weaken the at-rest guarantee — the
+  // DEK only exists in memory while the vault is unlocked.
   const rawDek = await crypto.subtle.exportKey("raw", dek);
   const runtimeDek = await crypto.subtle.importKey(
     "raw",
     rawDek,
     { name: "AES-GCM", length: 256 },
-    false,
+    true,
     ["encrypt", "decrypt"],
   );
+
 
   return {
     salt,
@@ -120,9 +124,10 @@ export async function unwrapVaultKey(
     kek,
     { name: "AES-GCM", iv: wrappedKeyIv as unknown as BufferSource },
     { name: "AES-GCM", length: 256 },
-    false,
+    true, // extractable — PIN/biometric enrollment re-wraps this key
     ["encrypt", "decrypt"],
   );
+
 }
 
 // Rotate the master passphrase without changing the DEK itself. The DEK
