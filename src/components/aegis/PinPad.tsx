@@ -81,7 +81,7 @@ export function PinPad({
                 disabled={disabled || value.length === 0}
                 whileTap={{ scale: 0.92, opacity: 0.7 }}
                 transition={soft}
-                className="flex h-[60px] w-[60px] items-center justify-center rounded-full disabled:opacity-40"
+                className="flex h-[52px] w-[52px] items-center justify-center rounded-full disabled:opacity-40 sm:h-[60px] sm:w-[60px]"
                 style={{ color: MUTED }}
                 aria-label="Delete last digit"
               >
