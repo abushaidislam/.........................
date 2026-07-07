@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 // Regression test for `ext_bridge_spoof` (agent_security scan).
 //
 // Before the fix, `isExtensionInstalled()` returned true for ANY extension
@@ -8,21 +7,29 @@
 // IDs) with an explicit `VITE_EXT_ALLOW_UNPACKED` dev opt-in. This suite
 // pins that behaviour so no future change silently re-opens the hole.
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const TRUSTED = "trustedaaaaaaaaaaaaaaaaaaaaaaaaa";
 const ATTACKER = "attackerbbbbbbbbbbbbbbbbbbbbbbbb";
+
+interface FakeDoc { documentElement: { dataset: Record<string, string> } }
+const fakeDoc: FakeDoc = { documentElement: { dataset: {} } };
+
+beforeEach(() => {
+  fakeDoc.documentElement.dataset = {};
+  (globalThis as { document?: FakeDoc }).document = fakeDoc;
+});
 
 async function loadBridge(env: Record<string, string>) {
   vi.resetModules();
   vi.stubEnv("VITE_EXT_TRUSTED_IDS", env.VITE_EXT_TRUSTED_IDS ?? "");
   vi.stubEnv("VITE_EXT_ALLOW_UNPACKED", env.VITE_EXT_ALLOW_UNPACKED ?? "");
-  document.documentElement.dataset.aegisExtensionId = env.dom ?? "";
+  if (env.dom) fakeDoc.documentElement.dataset.aegisExtensionId = env.dom;
   return await import("../extension-bridge");
 }
 
 afterEach(() => {
-  delete document.documentElement.dataset.aegisExtensionId;
+  delete (globalThis as { document?: FakeDoc }).document;
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
