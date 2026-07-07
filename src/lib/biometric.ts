@@ -139,9 +139,10 @@ async function wrapKeyFromPrf(prfOutput: ArrayBuffer): Promise<CryptoKey> {
     ikm,
     { name: "AES-GCM", length: 256 },
     false,
-    ["wrapKey", "unwrapKey"],
+    ["encrypt", "decrypt"],
   );
 }
+
 
 interface PrfExtensionResults {
   prf?: { results?: { first?: ArrayBuffer } };
