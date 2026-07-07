@@ -119,16 +119,15 @@ describe("double-PIN confirm flow", () => {
   // enroll — otherwise later PIN unlocks with the "first" PIN would fail.
   it("only enrolls when the two entries match", async () => {
     const { rawDek } = await createNewVaultKey(PASSPHRASE);
-    const firstPin = GOOD_PIN;
-    const secondPin = "129384"; // user mistyped
+    const firstPin: string = GOOD_PIN;
+    const secondPin: string = "129384"; // user mistyped
 
-    if (firstPin !== secondPin) {
-      // Simulated UI guard — no enrollPin call.
-      expect(isPinEnabled(USER_ID)).toBe(false);
-    } else {
+    if (firstPin === secondPin) {
       await enrollPin({ userId: USER_ID, pin: secondPin, dekBytes: rawDek });
     }
+    // Simulated UI guard: mismatch never calls enrollPin.
     expect(isPinEnabled(USER_ID)).toBe(false);
+
 
     // Now the happy path: same PIN both times → enrolled + unlockable.
     await enrollPin({ userId: USER_ID, pin: firstPin, dekBytes: rawDek });
