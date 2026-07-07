@@ -454,12 +454,23 @@ function LockPage() {
                 setLoading(true);
                 setNotice(null);
                 try {
-                  await supabase.from("vault_accounts").delete().eq("user_id", user.id);
-                  await supabase.from("vault_meta").delete().eq("user_id", user.id);
+                  const acctRes = await supabase
+                    .from("vault_accounts")
+                    .delete()
+                    .eq("user_id", user.id);
+                  if (acctRes.error) throw acctRes.error;
+                  const metaRes = await supabase
+                    .from("vault_meta")
+                    .delete()
+                    .eq("user_id", user.id);
+                  if (metaRes.error) throw metaRes.error;
                   disableBiometric(user.id);
                   setBioEnrolled(false);
                   setPassphrase("");
+                  setConfirmPass("");
+                  setHint("");
                   setPassphraseHint(null);
+                  setBioAutoTried(false);
                   setMode("create");
                 } catch (err) {
                   setNotice({
