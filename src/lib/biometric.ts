@@ -264,7 +264,9 @@ export async function enrollBiometric(params: {
 
 /* ---------------- unlock ---------------- */
 
-export async function unlockWithBiometric(userId: string): Promise<CryptoKey> {
+export async function unlockWithBiometric(
+  userId: string,
+): Promise<{ dek: CryptoKey; rawDek: Uint8Array }> {
   const raw = window.localStorage.getItem(BIO_STORAGE_PREFIX + userId);
   if (!raw) {
     // Legacy v1 blobs are intentionally not honored — they leaked the wrap
@@ -317,16 +319,23 @@ export async function unlockWithBiometric(userId: string): Promise<CryptoKey> {
 
   const wrapKey = await wrapKeyFromPrf(prfOutput);
   const iv = b64ToBytes(stored.wrappedDekIv);
-  return crypto.subtle.unwrapKey(
+  const rawDek = new Uint8Array(
+    await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: iv as unknown as BufferSource },
+      wrapKey,
+      b64ToBytes(stored.wrappedDek) as unknown as BufferSource,
+    ),
+  );
+  const dek = await crypto.subtle.importKey(
     "raw",
-    b64ToBytes(stored.wrappedDek) as unknown as BufferSource,
-    wrapKey,
-    { name: "AES-GCM", iv: iv as unknown as BufferSource },
+    rawDek as unknown as BufferSource,
     { name: "AES-GCM", length: 256 },
     false,
     ["encrypt", "decrypt"],
   );
+  return { dek, rawDek };
 }
+
 
 /* ---------------- disable / reset ---------------- */
 
