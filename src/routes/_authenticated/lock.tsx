@@ -81,6 +81,78 @@ function safeRedirect(target: string | undefined): string {
   return "/vault";
 }
 
+/**
+ * Visual "switch unlock method" tile. Shows a small icon that hints at the
+ * target method (a 3×3 dot grid for PIN, a key glyph for passphrase) plus a
+ * short label. Tapping it flips `unlockMethod`, which surfaces either the
+ * PinPad or the passphrase form. Keeps the fast paths one tap away and much
+ * more discoverable than a plain text link.
+ */
+function MethodCard({
+  variant,
+  onClick,
+  disabled,
+}: {
+  variant: "pin" | "passphrase";
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  const isPin = variant === "pin";
+  return (
+    <motion.button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      whileTap={{ scale: 0.985 }}
+      transition={soft}
+      className="group flex w-full items-center gap-3 rounded-[12px] border px-3.5 py-3 text-left transition-colors disabled:opacity-50"
+      style={{
+        borderColor: "rgb(var(--aegis-ink-rgb) / 0.14)",
+        background: "rgb(var(--aegis-ink-rgb) / 0.02)",
+      }}
+      aria-label={isPin ? "Switch to PIN unlock" : "Switch to passphrase unlock"}
+    >
+      <span
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[9px]"
+        style={{ background: CHARCOAL, color: CREAM_SOFT }}
+        aria-hidden
+      >
+        {isPin ? (
+          // Mini 3×3 keypad glyph — reads instantly as "PIN".
+          <span className="grid grid-cols-3 gap-[3px]">
+            {Array.from({ length: 9 }).map((_, i) => (
+              <span
+                key={i}
+                className="h-[3px] w-[3px] rounded-full"
+                style={{ background: CREAM_SOFT, opacity: 0.9 }}
+              />
+            ))}
+          </span>
+        ) : (
+          <KeyRound className="h-[18px] w-[18px]" strokeWidth={1.7} />
+        )}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span
+          className="text-[13.5px] leading-tight"
+          style={{ color: CHARCOAL, fontWeight: 500, letterSpacing: "-0.005em" }}
+        >
+          {isPin ? "Unlock with 6-digit PIN" : "Unlock with passphrase"}
+        </span>
+        <span className="text-[11.5px] leading-tight" style={{ color: MUTED }}>
+          {isPin ? "Faster on this device — tap to open the keypad" : "Type your master passphrase"}
+        </span>
+      </span>
+      <ChevronRight
+        className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5"
+        strokeWidth={1.6}
+        style={{ color: MUTED }}
+        aria-hidden
+      />
+    </motion.button>
+  );
+}
+
 function LockPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
