@@ -23,6 +23,7 @@ let autoLockMs: number | null = DEFAULT_AUTO_LOCK_MS;
 let currentUserId: string | null = null;
 
 let dek: CryptoKey | null = null;
+let rawDek: Uint8Array | null = null;
 let lockTimer: number | null = null;
 const listeners = new Set<() => void>();
 const settingsListeners = new Set<() => void>();
