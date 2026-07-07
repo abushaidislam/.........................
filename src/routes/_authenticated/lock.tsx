@@ -443,7 +443,7 @@ function LockPage() {
   }, [user.email]);
   const initials = useMemo(() => {
     const parts = displayName.split(/[\s._-]+/).filter(Boolean);
-    const chars = parts.slice(0, 2).map((p) => p.charAt(0).toUpperCase());
+    const chars = parts.slice(0, 2).map((p: string) => p.charAt(0).toUpperCase());
     return chars.join("") || "A";
   }, [displayName]);
 
