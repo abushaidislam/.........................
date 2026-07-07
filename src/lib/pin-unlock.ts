@@ -104,6 +104,41 @@ export function isValidPin(pin: string): boolean {
   return /^\d{4,6}$/.test(pin);
 }
 
+/**
+ * Detects PINs that are trivial to brute-force even under a rate limit:
+ * all-same digits, ascending/descending sequences, and a small hand-picked
+ * common list. Returns a human-readable reason when weak, else null.
+ */
+export function assessPinWeakness(pin: string): string | null {
+  if (!isValidPin(pin)) return "PIN must be 4–6 digits.";
+
+  // All same digit: 0000, 1111, ...
+  if (/^(\d)\1+$/.test(pin)) {
+    return "PIN can't be all the same digit.";
+  }
+
+  // Ascending or descending sequences: 1234, 123456, 4321, 987654, ...
+  let asc = true;
+  let desc = true;
+  for (let i = 1; i < pin.length; i++) {
+    const d = pin.charCodeAt(i) - pin.charCodeAt(i - 1);
+    if (d !== 1) asc = false;
+    if (d !== -1) desc = false;
+  }
+  if (asc || desc) return "PIN can't be a simple sequence like 1234.";
+
+  // Common leaked-PIN list (short curated set).
+  const common = new Set([
+    "1212", "0101", "1010", "1122", "2211", "1313", "2020", "6969", "4321",
+    "1004", "2000", "1004", "0007", "2580", "5683", "7777", "0852",
+    "123123", "121212", "112233", "101010", "112211", "159753", "147258",
+    "789456", "456789", "252525", "159357", "013579", "246810",
+  ]);
+  if (common.has(pin)) return "That PIN is too common. Please choose another.";
+
+  return null;
+}
+
 /* ---------------- KDF ---------------- */
 
 async function deriveWrapKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
@@ -136,14 +171,8 @@ export async function enrollPin(params: {
   pin: string;
   dek: CryptoKey;
 }): Promise<void> {
-  if (!isValidPin(params.pin)) {
-    throw new Error("PIN must be 4–6 digits.");
-  }
-  // Cheap reject-list for the worst PINs.
-  const trivial = new Set(["0000", "1111", "1234", "123456", "000000", "111111", "654321"]);
-  if (trivial.has(params.pin)) {
-    throw new Error("That PIN is too easy to guess. Please choose another.");
-  }
+  const weakness = assessPinWeakness(params.pin);
+  if (weakness) throw new Error(weakness);
 
   const salt = randomBytes(16);
   const iv = randomBytes(12);
