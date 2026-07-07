@@ -228,6 +228,15 @@ function LockPage() {
       setNotice({ kind: "error", text: "Enter your passphrase." });
       return;
     }
+    const waitMs = remainingCooldownMs(user.id);
+    if (waitMs > 0) {
+      setCooldownLeft(waitMs);
+      setNotice({
+        kind: "error",
+        text: `Too many attempts. Try again in ${Math.ceil(waitMs / 1000)}s.`,
+      });
+      return;
+    }
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -246,6 +255,9 @@ function LockPage() {
           toBytes(data.recovery_wrapped_key),
           toBytes(data.recovery_wrapped_key_iv),
         );
+        // Success — clear any accumulated failure counter.
+        recordSuccess(user.id);
+        setCooldownLeft(0);
         setVaultKey(dek);
         await maybeEnrollBiometric(dek);
         routeAfterUnlock();
@@ -260,7 +272,19 @@ function LockPage() {
           /OperationError|InvalidAccess|decrypt|unwrap|operation-specific/i.test(raw) ||
           /OperationError|InvalidAccessError/i.test(name)
         ) {
-          throw new Error("That passphrase didn't match.");
+          const cooldown = recordFailure(user.id);
+          if (cooldown > 0) {
+            setCooldownLeft(cooldown);
+            throw new Error(
+              `That passphrase didn't match. Try again in ${Math.ceil(cooldown / 1000)}s.`,
+            );
+          }
+          const fails = getFailureCount(user.id);
+          throw new Error(
+            fails > 1
+              ? `That passphrase didn't match. (${fails} attempts)`
+              : "That passphrase didn't match.",
+          );
         }
         throw cryptoErr;
       }
