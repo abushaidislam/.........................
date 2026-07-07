@@ -297,9 +297,10 @@ function LockPage() {
     setNotice(null);
     setPinBusy(true);
     try {
-      const dek = await unlockWithPin(user.id, pin);
-      setVaultKey(dek);
+      const { dek, rawDek } = await unlockWithPin(user.id, pin);
+      setVaultKey(dek, rawDek);
       routeAfterUnlock();
+
     } catch (err) {
       if (err instanceof PinUnlockError) {
         setPinShake(true);
