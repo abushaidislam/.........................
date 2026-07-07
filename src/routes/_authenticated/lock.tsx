@@ -189,7 +189,7 @@ function LockPage() {
     }
     setLoading(true);
     try {
-      const { salt, wrappedKey, wrappedKeyIv, dek, kdfAlgorithm } =
+      const { salt, wrappedKey, wrappedKeyIv, dek, rawDek, kdfAlgorithm } =
         await createNewVaultKey(passphrase);
       const { error } = await supabase.from("vault_meta").insert({
         user_id: user.id,
@@ -200,9 +200,10 @@ function LockPage() {
         passphrase_hint: hint.trim() ? hint.trim() : null,
       });
       if (error) throw error;
-      setVaultKey(dek);
-      await maybeEnrollBiometric(dek);
+      setVaultKey(dek, rawDek);
+      await maybeEnrollBiometric(rawDek);
       routeAfterUnlock();
+
     } catch (err) {
       setNotice({
         kind: "error",
