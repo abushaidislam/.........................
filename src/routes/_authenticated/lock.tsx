@@ -144,16 +144,17 @@ function LockPage() {
     };
   }, [user.id]);
 
-  const maybeEnrollBiometric = async (dek: CryptoKey) => {
+  const maybeEnrollBiometric = async (dekBytes: Uint8Array) => {
     if (!isBiometricPending()) return;
     if (!(await isBiometricSupported())) return;
     try {
-      await enrollBiometric({ userId: user.id, userEmail: user.email ?? user.id, dek });
+      await enrollBiometric({ userId: user.id, userEmail: user.email ?? user.id, dekBytes });
       setBioEnrolled(true);
     } catch {
       // Silent: they can enable it later from Security settings.
     }
   };
+
 
   const consumeImportIntent = () => {
     try {
