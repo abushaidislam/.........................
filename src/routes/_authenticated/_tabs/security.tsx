@@ -19,10 +19,6 @@ import {
 } from "lucide-react";
 import { isPinEnabled as isPinEnabledFn, enrollPin, disablePin } from "@/lib/pin-unlock";
 import { PinPad } from "@/components/aegis/PinPad";
-import { Fragment } from "react";
-// (re-close the original import block below is untouched)
-import {
-} from "lucide-react";
 
 import { DevicesSection } from "@/components/aegis/devices-section";
 import { ExtensionSyncSection } from "@/components/aegis/extension-sync-section";
