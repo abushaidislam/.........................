@@ -6,9 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   createNewVaultKey,
   unwrapVaultKey,
+  upgradeKdfToV2,
+  needsKdfUpgrade,
   toBytes,
   toByteaHex,
-  KDF_ALGORITHM,
 } from "@/lib/vault-crypto";
 import { setVaultKey } from "@/lib/vault-session";
 import {
