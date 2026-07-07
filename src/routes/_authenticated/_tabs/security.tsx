@@ -264,6 +264,13 @@ function SecurityPage() {
             onClick={() => setExportOpen(true)}
             chevron
           />
+          <SettingsRow
+            icon={<Cloud className="h-4 w-4" strokeWidth={1.8} />}
+            title={t("security.cloudBackup", "Encrypted cloud backup")}
+            description={t("security.cloudBackup.description", "Store passphrase-wrapped .avf files in your private cloud folder")}
+            onClick={() => setCloudBackupOpen(true)}
+            chevron
+          />
         </SettingsGroup>
 
 
