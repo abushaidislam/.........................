@@ -161,7 +161,7 @@ export function ApprovalSection() {
             )
           }
           title="Push notifications"
-          subtitle={status}
+          description={status}
           trailing={
             <Switch
               checked={subscribed}
@@ -180,7 +180,7 @@ export function ApprovalSection() {
             )
           }
           title="Send test approval"
-          subtitle="Sends a signed request to every device subscribed to your account."
+          description="Sends a signed request to every device subscribed to your account."
           onClick={busy === null ? handleTestRequest : undefined}
         />
       </SettingsGroup>
