@@ -39,9 +39,40 @@ const PREFIX = "aegis.autobackup.";
 const AUTO_LABEL = "auto";
 const CHECK_INTERVAL_MS = 15 * 60 * 1000; // 15 min
 const DEFAULT_KEEP = 5;
+const LOG_MAX = 25;
+
+export type AutoBackupLogKind = "change" | "start" | "success" | "error" | "skipped";
+export interface AutoBackupLogEntry {
+  at: string; // ISO
+  kind: AutoBackupLogKind;
+  message?: string;
+}
 
 function key(userId: string, k: string) {
   return `${PREFIX}${userId}.${k}`;
+}
+
+export function getAutoBackupLog(userId: string): AutoBackupLogEntry[] {
+  const raw = safeGet(key(userId, "log"));
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as AutoBackupLogEntry[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function clearAutoBackupLog(userId: string) {
+  safeSet(key(userId, "log"), null);
+  emit(userId);
+}
+
+function appendLog(userId: string, kind: AutoBackupLogKind, message?: string) {
+  const entry: AutoBackupLogEntry = { at: new Date().toISOString(), kind, message };
+  const next = [entry, ...getAutoBackupLog(userId)].slice(0, LOG_MAX);
+  safeSet(key(userId, "log"), JSON.stringify(next));
+  emit(userId);
 }
 
 function safeGet(k: string): string | null {
@@ -214,34 +245,42 @@ export async function runAutoBackupNow(userId: string): Promise<void> {
   const settings = getAutoBackupSettings(userId);
   if (!settings.enabled) return;
   const dek = getVaultKey();
-  if (!dek) return; // locked
+  if (!dek) {
+    appendLog(userId, "skipped", "Vault locked");
+    return;
+  }
   const wrapped = safeGet(key(userId, "pass"));
   if (!wrapped) {
     writeSettings(userId, {
       enabled: false,
       lastError: "Saved passphrase missing — re-enable auto-backup.",
     });
+    appendLog(userId, "error", "Saved passphrase missing");
     return;
   }
   running.add(userId);
+  appendLog(userId, "start", "Upload started");
   try {
     const passphrase = await unwrapPassphrase(dek, wrapped);
     const accounts = await listAccounts(dek);
     if (accounts.length === 0) {
       writeSettings(userId, { lastError: "Vault is empty — nothing to back up." });
+      appendLog(userId, "skipped", "Vault is empty");
       return;
     }
     await uploadCloudBackup(userId, accounts, passphrase, { label: AUTO_LABEL });
     writeSettings(userId, { lastAt: new Date().toISOString(), lastError: null });
+    appendLog(userId, "success", `${accounts.length} account${accounts.length === 1 ? "" : "s"} backed up`);
     void pruneOldAutoBackups(userId, settings.keep);
   } catch (err) {
-    writeSettings(userId, {
-      lastError: err instanceof Error ? err.message : "Auto-backup failed.",
-    });
+    const msg = err instanceof Error ? err.message : "Auto-backup failed.";
+    writeSettings(userId, { lastError: msg });
+    appendLog(userId, "error", msg);
   } finally {
     running.delete(userId);
   }
 }
+
 
 function scheduleFor(userId: string) {
   if (typeof window === "undefined") return;
@@ -298,6 +337,13 @@ function tryFlushDirty() {
 
 function markDirty() {
   dirty = true;
+  if (activeUserId) {
+    const settings = getAutoBackupSettings(activeUserId);
+    if (settings.enabled) {
+      const suffix = isOnline() ? "" : " (offline — queued)";
+      appendLog(activeUserId, "change", `Vault changed${suffix}`);
+    }
+  }
   if (typeof window === "undefined") return;
   if (debounceTimer !== null) window.clearTimeout(debounceTimer);
   debounceTimer = window.setTimeout(() => {
