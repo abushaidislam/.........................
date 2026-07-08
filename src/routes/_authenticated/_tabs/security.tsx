@@ -143,6 +143,10 @@ function SecurityPage() {
   const [changeOpen, setChangeOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [cloudBackupOpen, setCloudBackupOpen] = useState(false);
+  const [autoBackupOpen, setAutoBackupOpen] = useState(false);
+  const [autoBackup, setAutoBackup] = useState<AutoBackupSettings>(() =>
+    getAutoBackupSettings(user.id),
+  );
   const [bioSupported, setBioSupported] = useState(false);
   const [bioEnrolled, setBioEnrolled] = useState<boolean>(() => isBiometricEnabled(user.id));
   const [bioBusy, setBioBusy] = useState(false);
