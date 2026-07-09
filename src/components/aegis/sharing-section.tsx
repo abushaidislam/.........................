@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from "react";
 import * as OTPAuth from "otpauth";
 import { toast } from "sonner";
 import { Share2, Users, Inbox, AlertTriangle } from "lucide-react";
+import { useLingui } from "@lingui/react";
 import { supabase } from "@/integrations/supabase/client";
 import { getVaultKey } from "@/lib/vault-session";
 import {
@@ -44,6 +45,11 @@ interface OwnedAccount {
    ============================================================ */
 
 export function SharingSection() {
+  const { i18n } = useLingui();
+  const t = (id: string, fallback: string) => {
+    const msg = i18n._(id);
+    return msg === id ? fallback : msg;
+  };
   const [keys, setKeys] = useState<UserKeyMaterial | null>(null);
   const [outgoing, setOutgoing] = useState<OutgoingShare[]>([]);
   const [rotationNeeded, setRotationNeeded] = useState<OwnedAccount[]>([]);
