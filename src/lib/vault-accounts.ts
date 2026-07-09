@@ -4,7 +4,14 @@
 
 import * as OTPAuth from "otpauth";
 import { supabase } from "@/integrations/supabase/client";
-import { decryptSecret, encryptSecret, toBytes, toByteaHex } from "@/lib/vault-crypto";
+import {
+  buildAccountAad,
+  decryptSecret,
+  encryptSecret,
+  toBytes,
+  toByteaHex,
+  VAULT_ROW_CRYPTO_VERSION,
+} from "@/lib/vault-crypto";
 import {
   clearFavoriteToggle,
   isOffline,
@@ -49,7 +56,7 @@ function emitVaultChanged(): void {
 
 
 const ACCOUNT_SELECT =
-  "id, issuer, label, icon_slug, algorithm, digits, period, sort_order, is_favorite, tags, secret_ciphertext, secret_iv, otp_type, counter_ciphertext, counter_iv, updated_at";
+  "id, issuer, label, icon_slug, algorithm, digits, period, sort_order, is_favorite, tags, secret_ciphertext, secret_iv, otp_type, counter_ciphertext, counter_iv, crypto_version, updated_at";
 
 export type Algorithm = "SHA1" | "SHA256" | "SHA512";
 export type OtpType = "totp" | "hotp" | "steam";
@@ -80,6 +87,9 @@ export interface VaultAccountRecord {
   otp_type?: OtpType;
   counter_ciphertext?: unknown | null;
   counter_iv?: unknown | null;
+  // Phase 12: per-row on-disk crypto format version. Optional for cached
+  // rows written by pre-v3 clients — treat missing as 2 (legacy, no AAD).
+  crypto_version?: number;
   // Phase 6.2: server-side row version. Drives diff sync (`updated_at >
   // last_sync`) and the server-wins-on-tie merge rule.
   updated_at: string;
@@ -98,6 +108,9 @@ export interface DecryptedAccount {
   secret: string; // base32
   otp_type: OtpType;
   counter?: number; // HOTP only; TOTP/Steam ignore
+  // Row's stored crypto format (see VAULT_ROW_CRYPTO_VERSION). Callers
+  // that write back (e.g. HOTP advance) use it to pick matching AAD.
+  crypto_version?: number;
 }
 
 export interface ParsedOtpauth {
@@ -249,7 +262,14 @@ export async function addAccount(
   const digits = otp_type === "steam" ? 5 : input.digits ?? 6;
   const period = otp_type === "steam" ? 30 : otp_type === "hotp" ? 30 : input.period ?? 30;
 
-  const { ciphertext, iv } = await encryptSecret(dek, clean);
+  // Phase 12: client-generates the row id up front so the AAD binding
+  // (user_id | account_id) can be applied before ciphertext leaves the
+  // browser. This unifies the online + offline write paths and lets the
+  // server insert be a plain `INSERT` with the id we already committed to.
+  const clientId = generateClientId();
+  const aad = buildAccountAad(userId, clientId);
+
+  const { ciphertext, iv } = await encryptSecret(dek, clean, aad);
   const tags = normalizeTagList(input.tags ?? []);
   const issuer = input.issuer.trim();
   const label = input.label.trim();
@@ -260,12 +280,13 @@ export async function addAccount(
   let counterIvHex: string | null = null;
   if (otp_type === "hotp") {
     const startCounter = Math.max(0, Math.floor(input.counter ?? 0));
-    const enc = await encryptSecret(dek, String(startCounter));
+    const enc = await encryptSecret(dek, String(startCounter), aad);
     counterCiphertextHex = toByteaHex(enc.ciphertext);
     counterIvHex = toByteaHex(enc.iv);
   }
 
   const insertRow = {
+    id: clientId,
     user_id: userId,
     issuer,
     label,
@@ -279,13 +300,12 @@ export async function addAccount(
     otp_type,
     counter_ciphertext: counterCiphertextHex,
     counter_iv: counterIvHex,
+    crypto_version: VAULT_ROW_CRYPTO_VERSION,
   };
 
   const enqueueOfflineCreate = async () => {
-    // A client-generated UUID becomes the row's server id on flush. The
-    // cached row uses the same id, so any follow-up delete / edit made
-    // while still offline can target it directly.
-    const clientId = generateClientId();
+    // The client id above becomes the row's server id when the outbox
+    // flushes — same id, same AAD binding, so the ciphertext validates.
     const payload: CreatePayload = {
       userId,
       issuer,
@@ -301,6 +321,7 @@ export async function addAccount(
       otp_type,
       counter_ciphertext_hex: counterCiphertextHex,
       counter_iv_hex: counterIvHex,
+      crypto_version: VAULT_ROW_CRYPTO_VERSION,
     };
     enqueueCreate(clientId, payload);
     const cachedRow: VaultAccountRecord = {
@@ -319,6 +340,7 @@ export async function addAccount(
       otp_type,
       counter_ciphertext: counterCiphertextHex,
       counter_iv: counterIvHex,
+      crypto_version: VAULT_ROW_CRYPTO_VERSION,
       updated_at: new Date().toISOString(),
     };
     await upsertVaultCache(cachedRow);
@@ -688,6 +710,10 @@ export async function flushPendingOutbox(): Promise<number> {
           otp_type: payload.otp_type ?? "totp",
           counter_ciphertext: payload.counter_ciphertext_hex ?? null,
           counter_iv: payload.counter_iv_hex ?? null,
+          // Missing on pre-v3 queued items — server default (2) applies.
+          ...(payload.crypto_version !== undefined
+            ? { crypto_version: payload.crypto_version }
+            : {}),
         })
         .select(ACCOUNT_SELECT)
         .single();
@@ -735,9 +761,27 @@ async function decryptRows(
   dek: CryptoKey,
   rows: VaultAccountRecord[],
 ): Promise<DecryptedAccount[]> {
+  // Every row belongs to the current auth user (enforced by RLS on read).
+  // Resolve the user id once so v3 rows can rebuild their AAD binding.
+  let userId: string | null = null;
+  if (rows.some((r) => (r.crypto_version ?? 2) >= 3)) {
+    try {
+      const { data } = await supabase.auth.getUser();
+      userId = data.user?.id ?? null;
+    } catch {
+      userId = null;
+    }
+  }
   return Promise.all(
     rows.map(async (r) => {
-      const secret = await decryptSecret(dek, toBytes(r.secret_ciphertext), toBytes(r.secret_iv));
+      const rowVersion = r.crypto_version ?? 2;
+      const aad = rowVersion >= 3 && userId ? buildAccountAad(userId, r.id) : undefined;
+      const secret = await decryptSecret(
+        dek,
+        toBytes(r.secret_ciphertext),
+        toBytes(r.secret_iv),
+        aad,
+      );
       const otp_type: OtpType = (r.otp_type ?? "totp") as OtpType;
       let counter: number | undefined;
       if (otp_type === "hotp" && r.counter_ciphertext && r.counter_iv) {
@@ -746,6 +790,7 @@ async function decryptRows(
             dek,
             toBytes(r.counter_ciphertext),
             toBytes(r.counter_iv),
+            aad,
           );
           const n = Number.parseInt(raw, 10);
           if (Number.isFinite(n) && n >= 0) counter = n;
@@ -768,6 +813,7 @@ async function decryptRows(
         secret,
         otp_type,
         counter,
+        crypto_version: rowVersion,
       } satisfies DecryptedAccount;
     }),
   );

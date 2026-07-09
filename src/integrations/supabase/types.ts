@@ -314,6 +314,7 @@ export type Database = {
           counter_ciphertext: string | null
           counter_iv: string | null
           created_at: string
+          crypto_version: number
           digits: number
           icon_slug: string | null
           id: string
@@ -334,6 +335,7 @@ export type Database = {
           counter_ciphertext?: string | null
           counter_iv?: string | null
           created_at?: string
+          crypto_version?: number
           digits?: number
           icon_slug?: string | null
           id?: string
@@ -354,6 +356,7 @@ export type Database = {
           counter_ciphertext?: string | null
           counter_iv?: string | null
           created_at?: string
+          crypto_version?: number
           digits?: number
           icon_slug?: string | null
           id?: string
