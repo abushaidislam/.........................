@@ -398,6 +398,9 @@ function ImportPage() {
             notice={notice}
             busy={busy}
             onCommit={commit}
+            remaining={remaining}
+            capFinite={capFinite}
+            cap={cap}
           />
         ) : null}
       </div>
