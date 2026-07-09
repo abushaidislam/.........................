@@ -41,6 +41,7 @@ import {
 } from "@/components/aegis/chrome";
 import { LargeTitle, SectionLabel, SettingsGroup, SettingsRow } from "@/components/aegis/settings";
 import { PlanComparisonSheet } from "@/components/aegis/plan-comparison-sheet";
+import { PremiumWelcomeSheet } from "@/components/aegis/premium-welcome-sheet";
 import { Eye } from "lucide-react";
 import { getThemePref, setThemePref, type ThemePref } from "@/lib/theme";
 import {
