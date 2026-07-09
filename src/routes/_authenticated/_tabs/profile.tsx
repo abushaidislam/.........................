@@ -911,10 +911,15 @@ function ThemeSheet({
   onChoose: (pref: ThemePref) => void;
   onClose: () => void;
 }) {
+  const { i18n } = useLingui();
+  const t = (id: string, fallback: string) => {
+    const msg = i18n._(id);
+    return msg === id ? fallback : msg;
+  };
   const options: { pref: ThemePref; icon: React.ReactNode; title: string; description: string }[] = [
-    { pref: "system", icon: <Monitor className="h-4 w-4" strokeWidth={1.8} />, title: "System", description: "Follow your device." },
-    { pref: "light", icon: <Sun className="h-4 w-4" strokeWidth={1.8} />, title: "Light", description: "Warm cream, always." },
-    { pref: "dark", icon: <Moon className="h-4 w-4" strokeWidth={1.8} />, title: "Dark", description: "Easy on the eyes." },
+    { pref: "system", icon: <Monitor className="h-4 w-4" strokeWidth={1.8} />, title: t("appearance.system", "System"), description: t("appearance.system.description", "Follow your device.") },
+    { pref: "light", icon: <Sun className="h-4 w-4" strokeWidth={1.8} />, title: t("appearance.light", "Light"), description: t("appearance.light.description", "Warm cream, always.") },
+    { pref: "dark", icon: <Moon className="h-4 w-4" strokeWidth={1.8} />, title: t("appearance.dark", "Dark"), description: t("appearance.dark.description", "Easy on the eyes.") },
   ];
   return (
     <motion.div
