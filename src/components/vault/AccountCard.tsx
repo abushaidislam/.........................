@@ -239,6 +239,10 @@ export function AccountCard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
   const [issuerDraft, setIssuerDraft] = useState(account.issuer ?? "");
   const [labelDraft, setLabelDraft] = useState(account.label ?? "");
   const [detailsSaving, setDetailsSaving] = useState(false);
