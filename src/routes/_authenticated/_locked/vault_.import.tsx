@@ -603,6 +603,9 @@ function PreviewStage({
   notice,
   busy,
   onCommit,
+  remaining,
+  capFinite,
+  cap,
 }: {
   preview: Preview;
   selected: Set<number>;
@@ -611,6 +614,9 @@ function PreviewStage({
   notice: { kind: "error" | "info"; text: string } | null;
   busy: boolean;
   onCommit: () => void;
+  remaining: number;
+  capFinite: boolean;
+  cap: number;
 }) {
   const toggle = (i: number) => {
     const next = new Set(selected);
@@ -619,6 +625,7 @@ function PreviewStage({
     setSelected(next);
   };
   const allChecked = selected.size === preview.entries.length;
+  const overCap = capFinite && selected.size > remaining;
 
   return (
     <div className="flex flex-col gap-4 pt-2">
@@ -633,7 +640,16 @@ function PreviewStage({
 
       </div>
 
+      {overCap && (
+        <Notice kind="info">
+          {remaining === 0
+            ? `Your vault is at the ${cap}-account Free limit — upgrade to Pro to import these.`
+            : `Only ${remaining} of your ${selected.size} selected will fit on the Free plan (${cap} max). Deselect some or upgrade to Pro.`}
+        </Notice>
+      )}
+
       {notice && <Notice kind={notice.kind}>{notice.text}</Notice>}
+
 
       <button
         type="button"
