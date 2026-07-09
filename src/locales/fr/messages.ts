@@ -80,4 +80,18 @@ export const messages: Record<string, string> = {
   "common.save": "Enregistrer",
   "common.close": "Fermer",
   "common.retry": "Réessayer",
+
+  "profile.section.plan": "Formule",
+  "profile.plan": "Formule",
+  "profile.plan.free.description": "Gratuit — 25 comptes. Passez à Pro pour plus.",
+  "profile.plan.paid.description": "500 comptes · sauvegarde auto · alertes de fuites.",
+  "profile.plan.compare": "Comparer les formules",
+  "profile.plan.compare.description": "Voyez Free, Pro et Family côte à côte.",
+  "profile.section.sharing": "Partage",
+  "profile.family": "Famille",
+  "profile.family.description": "Partagez vos codes Aegis avec jusqu'à 6 proches.",
+
+  "security.autoBackup.proOnly": "Pro — passez à Pro pour activer",
+
+  "vault.card.share": "Partager",
 };
