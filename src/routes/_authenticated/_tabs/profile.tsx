@@ -21,6 +21,7 @@ import {
   Monitor,
   Sun,
   Moon,
+  Users,
 } from "lucide-react";
 import {
   BORDER,
