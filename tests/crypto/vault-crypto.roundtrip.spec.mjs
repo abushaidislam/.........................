@@ -117,3 +117,60 @@ test("tampered IV is rejected", async () => {
   iv[0] ^= 0xff;
   await assert.rejects(decryptWith(dek, ct, iv));
 });
+
+// -------- Phase 12: AAD binding --------
+
+async function encryptWithAad(dek, plaintext, aad) {
+  const iv = randomBytes(12);
+  const ct = new Uint8Array(
+    await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv, additionalData: aad },
+      dek,
+      enc.encode(plaintext),
+    ),
+  );
+  return { ct, iv };
+}
+
+async function decryptWithAad(dek, ct, iv, aad) {
+  const pt = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv, additionalData: aad },
+    dek,
+    ct,
+  );
+  return dec.decode(pt);
+}
+
+test("v3 AAD roundtrip: encrypt+decrypt with matching AAD succeeds", async () => {
+  const { dek } = await createVault("pw");
+  const aad = enc.encode("user-abc|account-xyz");
+  const { ct, iv } = await encryptWithAad(dek, "JBSWY3DPEHPK3PXP", aad);
+  const restored = await decryptWithAad(dek, ct, iv, aad);
+  assert.equal(restored, "JBSWY3DPEHPK3PXP");
+});
+
+test("v3 AAD: swapping account_id in AAD is rejected (row swap attack)", async () => {
+  const { dek } = await createVault("pw");
+  const aad = enc.encode("user-abc|account-xyz");
+  const wrongAad = enc.encode("user-abc|account-999");
+  const { ct, iv } = await encryptWithAad(dek, "secret", aad);
+  await assert.rejects(decryptWithAad(dek, ct, iv, wrongAad));
+});
+
+test("v3 AAD: swapping user_id in AAD is rejected (cross-user attack)", async () => {
+  const { dek } = await createVault("pw");
+  const aad = enc.encode("user-abc|account-xyz");
+  const wrongAad = enc.encode("user-different|account-xyz");
+  const { ct, iv } = await encryptWithAad(dek, "secret", aad);
+  await assert.rejects(decryptWithAad(dek, ct, iv, wrongAad));
+});
+
+test("v3 AAD: legacy no-AAD ciphertext cannot be decrypted with AAD", async () => {
+  const { dek } = await createVault("pw");
+  const { ct, iv } = await encryptWith(dek, "legacy v2 secret");
+  const aad = enc.encode("user-abc|account-xyz");
+  await assert.rejects(decryptWithAad(dek, ct, iv, aad));
+  // But no-AAD decrypt still works — this is the read compat contract.
+  const restored = await decryptWith(dek, ct, iv);
+  assert.equal(restored, "legacy v2 secret");
+});
