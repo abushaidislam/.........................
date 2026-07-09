@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback } from "react";
+import { useLingui } from "@lingui/react";
 import Onboarding from "@/components/onboarding/Onboarding";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,8 +28,14 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
       {error.message}
     </div>
   ),
-  notFoundComponent: () => <div className="p-6 text-sm">Not found</div>,
+  notFoundComponent: NotFound,
 });
+
+function NotFound() {
+  const { i18n } = useLingui();
+  const m = i18n._("onb.notFound");
+  return <div className="p-6 text-sm">{m === "onb.notFound" ? "Not found" : m}</div>;
+}
 
 
 function OnboardingPage() {

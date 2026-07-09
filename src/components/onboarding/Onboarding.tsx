@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useLingui } from "@lingui/react";
+
+function useT() {
+  const { i18n } = useLingui();
+  return (id: string, fallback: string) => {
+    const m = i18n._(id);
+    return m === id ? fallback : m;
+  };
+}
 import {
   Shield,
   Zap,
@@ -111,6 +120,7 @@ function TopBar({
   hapticsOn: boolean;
   onToggleHaptics: () => void;
 }) {
+  const t = useT();
   return (
     <header className="relative z-10 flex h-12 shrink-0 items-center justify-between px-5">
       <div className="flex w-24 items-center justify-start gap-1">
@@ -124,7 +134,7 @@ function TopBar({
               transition={spring}
               whileTap={{ scale: 0.94 }}
               onClick={onBack}
-              aria-label="Go back"
+              aria-label={t("onb.aria.back", "Go back")}
               className="flex h-8 w-8 items-center justify-center rounded-full"
               style={{ color: CHARCOAL, background: "rgb(var(--aegis-ink-rgb) / 0.03)" }}
             >
@@ -169,8 +179,8 @@ function TopBar({
           onClick={onToggleHaptics}
           role="switch"
           aria-checked={hapticsOn}
-          aria-label={hapticsOn ? "Turn off vibration feedback" : "Turn on vibration feedback"}
-          title={hapticsOn ? "Vibration on" : "Vibration off"}
+          aria-label={hapticsOn ? t("onb.aria.vibrateOn", "Turn off vibration feedback") : t("onb.aria.vibrateOff", "Turn on vibration feedback")}
+          title={hapticsOn ? t("onb.title.vibrateOn", "Vibration on") : t("onb.title.vibrateOff", "Vibration off")}
           className="flex h-8 w-8 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--aegis-ink-rgb) / 0.4)]"
           style={{
             color: hapticsOn ? CHARCOAL : MUTED,
@@ -192,7 +202,7 @@ function TopBar({
             className="rounded-full px-3 py-1 text-[13px]"
             style={{ color: MUTED, fontWeight: 400 }}
           >
-            Skip
+            {t("onb.skip", "Skip")}
           </motion.button>
         )}
       </div>
@@ -618,6 +628,7 @@ function SuccessMark() {
 /* ------------------------------------------------------------------ */
 
 function StepWelcome({ next }: { next: () => void }) {
+  const t = useT();
   return (
     <Screen>
       <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
@@ -630,22 +641,22 @@ function StepWelcome({ next }: { next: () => void }) {
             />
             Aegis
           </Eyebrow>
-          <Display>Security, quietly done.</Display>
+          <Display>{t("onb.welcome.title", "Security, quietly done.")}</Display>
           <Lede>
-            A calm authenticator for your one-time codes — end-to-end encrypted and effortless.
+            {t("onb.welcome.body", "A calm authenticator for your one-time codes — end-to-end encrypted and effortless.")}
           </Lede>
         </div>
       </div>
       <div className="shrink-0 pb-[max(20px,env(safe-area-inset-bottom))] pt-2">
-        <PrimaryButton onClick={next}>Get started</PrimaryButton>
+        <PrimaryButton onClick={next}>{t("onb.welcome.cta", "Get started")}</PrimaryButton>
         <p className="mt-3 text-center text-[12px]" style={{ color: MUTED }}>
-          By continuing you agree to our{" "}
+          {t("onb.welcome.terms", "By continuing you agree to our")}{" "}
           <span className="underline underline-offset-[3px]" style={{ color: CHARCOAL }}>
-            Terms
+            {t("onb.welcome.termsLink", "Terms")}
           </span>{" "}
-          &{" "}
+          {t("onb.welcome.and", "&")}{" "}
           <span className="underline underline-offset-[3px]" style={{ color: CHARCOAL }}>
-            Privacy
+            {t("onb.welcome.privacyLink", "Privacy")}
           </span>
           .
         </p>
@@ -655,37 +666,38 @@ function StepWelcome({ next }: { next: () => void }) {
 }
 
 function StepFeatures({ next }: { next: () => void }) {
+  const t = useT();
   return (
     <Screen>
       <div className="flex flex-1 flex-col justify-center gap-6">
         <div className="flex flex-col gap-2">
-          <Eyebrow>Why Aegis</Eyebrow>
-          <Display>Built for trust.</Display>
-          <Lede>Three principles guide every decision — nothing more, nothing less.</Lede>
+          <Eyebrow>{t("onb.features.eyebrow", "Why Aegis")}</Eyebrow>
+          <Display>{t("onb.features.title", "Built for trust.")}</Display>
+          <Lede>{t("onb.features.body", "Three principles guide every decision — nothing more, nothing less.")}</Lede>
         </div>
         <div className="flex flex-col gap-2.5">
           <FeatureRow
             icon={<Zap className="h-4 w-4" strokeWidth={1.8} />}
-            title="Fast"
-            body="Codes appear instantly, always accurate to the second."
+            title={t("onb.features.fast.title", "Fast")}
+            body={t("onb.features.fast.body", "Codes appear instantly, always accurate to the second.")}
             delay={0.05}
           />
           <FeatureRow
             icon={<Lock className="h-4 w-4" strokeWidth={1.8} />}
-            title="Private"
-            body="End-to-end encrypted. Nothing ever leaves your device unencrypted."
+            title={t("onb.features.private.title", "Private")}
+            body={t("onb.features.private.body", "End-to-end encrypted. Nothing ever leaves your device unencrypted.")}
             delay={0.12}
           />
           <FeatureRow
             icon={<RefreshCw className="h-4 w-4" strokeWidth={1.8} />}
-            title="Reliable"
-            body="Works offline. Syncs quietly when you're back online."
+            title={t("onb.features.reliable.title", "Reliable")}
+            body={t("onb.features.reliable.body", "Works offline. Syncs quietly when you're back online.")}
             delay={0.19}
           />
         </div>
       </div>
       <div className="shrink-0 pb-[max(20px,env(safe-area-inset-bottom))] pt-2">
-        <PrimaryButton onClick={next}>Continue</PrimaryButton>
+        <PrimaryButton onClick={next}>{t("onb.continue", "Continue")}</PrimaryButton>
       </div>
     </Screen>
   );
@@ -703,6 +715,7 @@ function setImportIntent(v: "scan" | "manual" | "backup" | null) {
 }
 
 function StepImport({ next }: { next: () => void }) {
+  const t = useT();
   const [selected, setSelected] = useState<"scan" | "manual" | "backup" | null>(null);
 
   const pick = (v: "scan" | "manual" | "backup") => {
@@ -715,31 +728,31 @@ function StepImport({ next }: { next: () => void }) {
     <Screen>
       <div className="flex flex-1 flex-col justify-center gap-6">
         <div className="flex flex-col gap-2">
-          <Eyebrow>Import</Eyebrow>
-          <Display>Bring your accounts.</Display>
-          <Lede>Pick a method — Aegis will guide you through the rest.</Lede>
+          <Eyebrow>{t("onb.import.eyebrow", "Import")}</Eyebrow>
+          <Display>{t("onb.import.title", "Bring your accounts.")}</Display>
+          <Lede>{t("onb.import.body", "Pick a method — Aegis will guide you through the rest.")}</Lede>
         </div>
         <div className="flex flex-col gap-2.5">
           <ImportOption
             icon={<QrCode className="h-4 w-4" strokeWidth={1.8} />}
-            title="Scan a QR code"
-            body="From Google, Authy, 1Password and more."
+            title={t("onb.import.scan.title", "Scan a QR code")}
+            body={t("onb.import.scan.body", "From Google, Authy, 1Password and more.")}
             onClick={() => pick("scan")}
             delay={0.05}
             active={selected === "scan"}
           />
           <ImportOption
             icon={<Upload className="h-4 w-4" strokeWidth={1.8} />}
-            title="Import a backup file"
-            body="Coming soon — we'll notify you."
+            title={t("onb.import.backup.title", "Import a backup file")}
+            body={t("onb.import.backup.body", "Coming soon — we'll notify you.")}
             onClick={() => pick("backup")}
             delay={0.12}
             active={selected === "backup"}
           />
           <ImportOption
             icon={<KeyRound className="h-4 w-4" strokeWidth={1.8} />}
-            title="Enter a setup key"
-            body="Add manually with a Base32 secret."
+            title={t("onb.import.manual.title", "Enter a setup key")}
+            body={t("onb.import.manual.body", "Add manually with a Base32 secret.")}
             onClick={() => pick("manual")}
             delay={0.19}
             active={selected === "manual"}
@@ -753,7 +766,7 @@ function StepImport({ next }: { next: () => void }) {
             next();
           }}
         >
-          I'll do this later
+          {t("onb.import.later", "I'll do this later")}
         </TextLink>
       </div>
     </Screen>
@@ -761,24 +774,25 @@ function StepImport({ next }: { next: () => void }) {
 }
 
 function StepBackup({ next }: { next: () => void }) {
+  const t = useT();
   const [on, setOn] = useState(true);
   return (
     <Screen>
       <div className="flex flex-1 flex-col justify-center gap-6">
         <div className="flex flex-col gap-2">
-          <Eyebrow>Backup</Eyebrow>
-          <Display>Your vault, protected.</Display>
-          <Lede>Encrypted backups keep you safe — even if your device isn't.</Lede>
+          <Eyebrow>{t("onb.backup.eyebrow", "Backup")}</Eyebrow>
+          <Display>{t("onb.backup.title", "Your vault, protected.")}</Display>
+          <Lede>{t("onb.backup.body", "Encrypted backups keep you safe — even if your device isn't.")}</Lede>
         </div>
         <VaultIllustration />
         <Card className="p-4">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="text-[14.5px]" style={{ color: CHARCOAL, fontWeight: 500 }}>
-                Automatic backups
+                {t("onb.backup.auto", "Automatic backups")}
               </div>
               <div className="mt-0.5 text-[12.5px]" style={{ color: MUTED }}>
-                Encrypted with a key only you hold.
+                {t("onb.backup.autoBody", "Encrypted with a key only you hold.")}
               </div>
             </div>
             <NativeSwitch on={on} onToggle={() => setOn((v) => !v)} />
@@ -786,13 +800,14 @@ function StepBackup({ next }: { next: () => void }) {
         </Card>
       </div>
       <div className="shrink-0 pb-[max(20px,env(safe-area-inset-bottom))] pt-2">
-        <PrimaryButton onClick={next}>Continue</PrimaryButton>
+        <PrimaryButton onClick={next}>{t("onb.continue", "Continue")}</PrimaryButton>
       </div>
     </Screen>
   );
 }
 
 function StepNotifications({ next }: { next: () => void }) {
+  const t = useT();
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">("default");
   const [busy, setBusy] = useState(false);
 
@@ -818,11 +833,10 @@ function StepNotifications({ next }: { next: () => void }) {
     try {
       const result = await Notification.requestPermission();
       setPermission(result);
-      // Quick success ping so the user knows it took.
       if (result === "granted") {
         try {
-          new Notification("Aegis is watching", {
-            body: "You'll only hear from us for sign-in requests and alerts.",
+          new Notification(t("onb.notif.demoTitle", "Aegis is watching"), {
+            body: t("onb.notif.demoBody", "You'll only hear from us for sign-in requests and alerts."),
             silent: true,
           });
         } catch {
@@ -837,12 +851,12 @@ function StepNotifications({ next }: { next: () => void }) {
 
   const label =
     permission === "granted"
-      ? "Notifications enabled"
+      ? t("onb.notif.enabled", "Notifications enabled")
       : permission === "denied"
-        ? "Blocked in browser"
+        ? t("onb.notif.blocked", "Blocked in browser")
         : permission === "unsupported"
-          ? "Not available here"
-          : "Allow notifications";
+          ? t("onb.notif.unsupported", "Not available here")
+          : t("onb.notif.allow", "Allow notifications");
 
   return (
     <Screen>
@@ -851,12 +865,12 @@ function StepNotifications({ next }: { next: () => void }) {
           <Bell className="h-7 w-7" strokeWidth={1.6} />
         </PulseIcon>
         <div className="flex flex-col items-center gap-2">
-          <Eyebrow>Notifications</Eyebrow>
-          <Display>Only when it matters.</Display>
-          <Lede>Get a quiet nudge for sign-in requests and security alerts. Nothing else.</Lede>
+          <Eyebrow>{t("onb.notif.eyebrow", "Notifications")}</Eyebrow>
+          <Display>{t("onb.notif.title", "Only when it matters.")}</Display>
+          <Lede>{t("onb.notif.body", "Get a quiet nudge for sign-in requests and security alerts. Nothing else.")}</Lede>
           {permission === "denied" && (
             <p className="pt-1 text-[12px]" style={{ color: MUTED, maxWidth: "32ch" }}>
-              Enable notifications from your browser's site settings if you change your mind.
+              {t("onb.notif.deniedHint", "Enable notifications from your browser's site settings if you change your mind.")}
             </p>
           )}
         </div>
@@ -866,7 +880,7 @@ function StepNotifications({ next }: { next: () => void }) {
           {label}
         </PrimaryButton>
         <div className="text-center">
-          <TextLink onClick={next}>{permission === "granted" ? "Continue" : "Not now"}</TextLink>
+          <TextLink onClick={next}>{permission === "granted" ? t("onb.continue", "Continue") : t("onb.notif.notNow", "Not now")}</TextLink>
         </div>
       </div>
     </Screen>
@@ -874,6 +888,7 @@ function StepNotifications({ next }: { next: () => void }) {
 }
 
 function StepBiometrics({ next }: { next: () => void }) {
+  const t = useT();
   const [supported, setSupported] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<"idle" | "queued" | "unavailable">("idle");
@@ -899,12 +914,9 @@ function StepBiometrics({ next }: { next: () => void }) {
         setBusy(false);
         return;
       }
-      // Vault DEK doesn't exist yet — flag it, actual WebAuthn enrollment
-      // happens right after the user creates/unlocks their vault.
       markBiometricPending();
       setStatus("queued");
       setBusy(false);
-      // Small delay so the confirmation ticks in.
       setTimeout(next, 480);
     } catch {
       setStatus("unavailable");
@@ -914,12 +926,12 @@ function StepBiometrics({ next }: { next: () => void }) {
 
   const primaryLabel =
     status === "queued"
-      ? "Ready — armed for first unlock"
+      ? t("onb.bio.queued", "Ready — armed for first unlock")
       : status === "unavailable"
-        ? "Not available on this device"
+        ? t("onb.bio.unavailable", "Not available on this device")
         : supported === false
-          ? "Not available on this device"
-          : "Enable biometrics";
+          ? t("onb.bio.unavailable", "Not available on this device")
+          : t("onb.bio.enable", "Enable biometrics");
 
   const disabled = busy || status === "queued" || supported === false || status === "unavailable";
 
@@ -930,18 +942,17 @@ function StepBiometrics({ next }: { next: () => void }) {
           <Fingerprint className="h-8 w-8" strokeWidth={1.6} />
         </PulseIcon>
         <div className="flex flex-col items-center gap-2">
-          <Eyebrow>Unlock</Eyebrow>
-          <Display>Just a glance.</Display>
-          <Lede>Use Face ID or your fingerprint so only you can open Aegis.</Lede>
+          <Eyebrow>{t("onb.bio.eyebrow", "Unlock")}</Eyebrow>
+          <Display>{t("onb.bio.title", "Just a glance.")}</Display>
+          <Lede>{t("onb.bio.body", "Use Face ID or your fingerprint so only you can open Aegis.")}</Lede>
           {supported === false && (
             <p className="pt-1 text-[12px]" style={{ color: MUTED, maxWidth: "32ch" }}>
-              This browser doesn't expose a platform biometric. You'll use your master passphrase
-              instead — that's fine, it's the source of truth anyway.
+              {t("onb.bio.unsupportedHint", "This browser doesn't expose a platform biometric. You'll use your master passphrase instead — that's fine, it's the source of truth anyway.")}
             </p>
           )}
           {status === "queued" && (
             <p className="pt-1 text-[12px]" style={{ color: MUTED, maxWidth: "32ch" }}>
-              We'll ask for Face ID / fingerprint right after you set your master passphrase.
+              {t("onb.bio.queuedHint", "We'll ask for Face ID / fingerprint right after you set your master passphrase.")}
             </p>
           )}
         </div>
@@ -952,7 +963,7 @@ function StepBiometrics({ next }: { next: () => void }) {
         </PrimaryButton>
         <div className="text-center">
           <TextLink onClick={next}>
-            {status === "queued" ? "Continue" : "Use passcode instead"}
+            {status === "queued" ? t("onb.continue", "Continue") : t("onb.bio.usePasscode", "Use passcode instead")}
           </TextLink>
         </div>
       </div>
@@ -961,6 +972,7 @@ function StepBiometrics({ next }: { next: () => void }) {
 }
 
 function StepPro({ next }: { next: () => void }) {
+  const t = useT();
   const reduce = useReducedMotion();
   return (
     <Screen>
@@ -968,41 +980,41 @@ function StepPro({ next }: { next: () => void }) {
         <div className="flex flex-col gap-2">
           <Eyebrow>
             <Sparkles className="h-3 w-3" strokeWidth={2} />
-            Aegis Pro
+            {t("onb.pro.eyebrow", "Aegis Pro")}
           </Eyebrow>
-          <Display>More, when you need it.</Display>
-          <Lede>Aegis is free forever. Pro unlocks the power features when your vault grows.</Lede>
+          <Display>{t("onb.pro.title", "More, when you need it.")}</Display>
+          <Lede>{t("onb.pro.body", "Aegis is free forever. Pro unlocks the power features when your vault grows.")}</Lede>
         </div>
 
         <div className="flex flex-col gap-2">
           <FeatureRow
             icon={<InfinityIcon className="h-4 w-4" strokeWidth={1.8} />}
-            title="500 accounts (vs 25)"
-            body="20× the Free vault size — enough for even the busiest security setup."
+            title={t("onb.pro.500.title", "500 accounts (vs 25)")}
+            body={t("onb.pro.500.body", "20× the Free vault size — enough for even the busiest security setup.")}
             delay={0.05}
           />
           <FeatureRow
             icon={<CloudUpload className="h-4 w-4" strokeWidth={1.8} />}
-            title="Encrypted cloud backup"
-            body="Auto-synced across every device, with 30-day version history."
+            title={t("onb.pro.backup.title", "Encrypted cloud backup")}
+            body={t("onb.pro.backup.body", "Auto-synced across every device, with 30-day version history.")}
             delay={0.10}
           />
           <FeatureRow
             icon={<ShieldAlert className="h-4 w-4" strokeWidth={1.8} />}
-            title="Breach monitoring"
-            body="Get alerted the moment one of your accounts leaks."
+            title={t("onb.pro.breach.title", "Breach monitoring")}
+            body={t("onb.pro.breach.body", "Get alerted the moment one of your accounts leaks.")}
             delay={0.15}
           />
           <FeatureRow
             icon={<Chrome className="h-4 w-4" strokeWidth={1.8} />}
-            title="Browser autofill"
-            body="One-tap sign-in from the Aegis extension on any site."
+            title={t("onb.pro.autofill.title", "Browser autofill")}
+            body={t("onb.pro.autofill.body", "One-tap sign-in from the Aegis extension on any site.")}
             delay={0.20}
           />
           <FeatureRow
             icon={<Users className="h-4 w-4" strokeWidth={1.8} />}
-            title="Family sharing"
-            body="Up to 6 members with a shared household vault."
+            title={t("onb.pro.family.title", "Family sharing")}
+            body={t("onb.pro.family.body", "Up to 6 members with a shared household vault.")}
             delay={0.25}
           />
         </div>
@@ -1014,17 +1026,17 @@ function StepPro({ next }: { next: () => void }) {
           className="flex items-center justify-center gap-2 text-[12.5px]"
           style={{ color: MUTED }}
         >
-          <span>Pro</span>
-          <span style={{ color: CHARCOAL, fontWeight: 500 }}>$2.99/mo</span>
+          <span>{t("onb.pro.priceProLabel", "Pro")}</span>
+          <span style={{ color: CHARCOAL, fontWeight: 500 }}>{t("onb.pro.priceProVal", "$2.99/mo")}</span>
           <span aria-hidden>·</span>
-          <span>Family</span>
-          <span style={{ color: CHARCOAL, fontWeight: 500 }}>$4.99/mo</span>
+          <span>{t("onb.pro.priceFamilyLabel", "Family")}</span>
+          <span style={{ color: CHARCOAL, fontWeight: 500 }}>{t("onb.pro.priceFamilyVal", "$4.99/mo")}</span>
         </motion.div>
       </div>
       <div className="shrink-0 space-y-3 pb-[max(20px,env(safe-area-inset-bottom))] pt-2">
-        <PrimaryButton onClick={next}>Continue with Free</PrimaryButton>
+        <PrimaryButton onClick={next}>{t("onb.pro.continueFree", "Continue with Free")}</PrimaryButton>
         <div className="text-center">
-          <TextLink onClick={next}>You can upgrade anytime from Profile</TextLink>
+          <TextLink onClick={next}>{t("onb.pro.upgradeLater", "You can upgrade anytime from Profile")}</TextLink>
         </div>
       </div>
       {reduce ? null : null}
@@ -1033,6 +1045,7 @@ function StepPro({ next }: { next: () => void }) {
 }
 
 function StepDone({ next }: { next: () => void }) {
+  const t = useT();
   return (
     <Screen>
       <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
@@ -1043,10 +1056,10 @@ function StepDone({ next }: { next: () => void }) {
               className="inline-block h-1.5 w-1.5 rounded-full"
               style={{ background: CHARCOAL }}
             />
-            Ready
+            {t("onb.done.ready", "Ready")}
           </Eyebrow>
-          <Display>You're all set.</Display>
-          <Lede>Aegis is guarding your accounts. Add your first code whenever you're ready.</Lede>
+          <Display>{t("onb.done.title", "You're all set.")}</Display>
+          <Lede>{t("onb.done.body", "Aegis is guarding your accounts. Add your first code whenever you're ready.")}</Lede>
         </div>
       </div>
       <div className="shrink-0 pb-[max(20px,env(safe-area-inset-bottom))] pt-2">
@@ -1054,7 +1067,7 @@ function StepDone({ next }: { next: () => void }) {
           onClick={next}
           icon={<ArrowRight className="h-[15px] w-[15px]" strokeWidth={1.8} />}
         >
-          Open Aegis
+          {t("onb.done.cta", "Open Aegis")}
         </PrimaryButton>
       </div>
     </Screen>
