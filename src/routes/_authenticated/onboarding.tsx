@@ -27,8 +27,14 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
       {error.message}
     </div>
   ),
-  notFoundComponent: () => <div className="p-6 text-sm">Not found</div>,
+  notFoundComponent: NotFound,
 });
+
+function NotFound() {
+  const { i18n } = require("@lingui/react").useLingui();
+  const m = i18n._("onb.notFound");
+  return <div className="p-6 text-sm">{m === "onb.notFound" ? "Not found" : m}</div>;
+}
 
 
 function OnboardingPage() {
