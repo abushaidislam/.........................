@@ -13,6 +13,7 @@ import {
 } from "@/lib/vault-crypto";
 import { setVaultKey } from "@/lib/vault-session";
 import { runV3Migration } from "@/lib/vault-migrator";
+import { ensureUserKeys } from "@/lib/vault-sharing-crypto";
 import {
   getFailureCount,
   recordFailure,
