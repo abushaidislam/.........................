@@ -214,16 +214,37 @@ function NewAccountPage() {
         {/* Compact hero */}
         <div className="flex flex-col gap-1.5 pt-2 pb-4">
           <h1 style={typeDisplay}>
-            {tab === "scan" ? t("add.hero.scan", "Scan a code") : t("add.hero.manual", "Enter by hand")}
+            {atCap
+              ? "You're at the Free plan limit"
+              : tab === "scan"
+                ? t("add.hero.scan", "Scan a code")
+                : t("add.hero.manual", "Enter by hand")}
           </h1>
           <p style={typeBody}>
-            {tab === "scan"
-              ? "Point at the QR shown by any service. We'll do the rest."
-              : "Type the secret shown as text on the service's setup screen."}
+            {atCap
+              ? `You've saved ${accountCount} of ${cap} accounts. Upgrade to Pro to add more.`
+              : tab === "scan"
+                ? "Point at the QR shown by any service. We'll do the rest."
+                : "Type the secret shown as text on the service's setup screen."}
           </p>
 
         </div>
 
+        {atCap ? (
+          <div className="pt-2">
+            <UpgradePrompt
+              title="Unlimited accounts with Pro"
+              body="Pro lifts the cap from 25 to 500 accounts, adds encrypted cloud backup and breach monitoring."
+              tier="Pro"
+            />
+          </div>
+        ) : (
+          <>
+        </>
+        )}
+
+        {!atCap && (
+        <>
         <SegmentedTabs tab={tab} setTab={setTab} />
 
         <div className="flex items-center justify-between pt-3">
