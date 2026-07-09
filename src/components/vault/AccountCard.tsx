@@ -14,6 +14,7 @@ import {
   Pencil,
   MousePointerClick,
   RefreshCw,
+  Share2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -23,6 +24,7 @@ import {
   updateAccountDetails,
   type DecryptedAccount,
 } from "@/lib/vault-accounts";
+import { shareAccountByEmail } from "@/lib/vault-sharing";
 import { getVaultKey } from "@/lib/vault-session";
 import { BORDER, CHARCOAL, CREAM_SOFT, DANGER, FAV, MUTED, soft } from "@/components/aegis/chrome";
 import {
@@ -237,6 +239,10 @@ export function AccountCard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [shareBusy, setShareBusy] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
   const [issuerDraft, setIssuerDraft] = useState(account.issuer ?? "");
   const [labelDraft, setLabelDraft] = useState(account.label ?? "");
   const [detailsSaving, setDetailsSaving] = useState(false);
@@ -376,6 +382,25 @@ export function AccountCard({
     setTagError(null);
     setEditing(false);
   };
+
+  const submitShare = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = shareEmail.trim();
+    if (!email || shareBusy) return;
+    setShareBusy(true);
+    setShareError(null);
+    try {
+      await shareAccountByEmail(account.id, email);
+      toast.success("Shared. They'll see it after they unlock their vault.");
+      setShareOpen(false);
+      setShareEmail("");
+    } catch (err) {
+      setShareError(err instanceof Error ? err.message : "Could not share account.");
+    } finally {
+      setShareBusy(false);
+    }
+  };
+
 
   const pressTimer = useRef<number | null>(null);
   const longPressedRef = useRef(false);
@@ -1391,7 +1416,7 @@ export function AccountCard({
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
                           transition={actionSwapT}
-                          className="grid grid-cols-2 gap-2 pb-1"
+                          className="grid grid-cols-3 gap-2 pb-1"
                         >
                           <motion.button
                             ref={editButtonRef}
@@ -1411,6 +1436,24 @@ export function AccountCard({
                           >
                             <Pencil className="h-4 w-4" strokeWidth={1.9} />
                             {t("vault.card.edit", "Edit")}
+                          </motion.button>
+                          <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              setShareError(null);
+                              setShareOpen(true);
+                            }}
+                            className="flex items-center justify-center gap-2 rounded-[14px] px-3 py-3 text-[13px]"
+                            style={{
+                              background: CREAM_SOFT,
+                              color: CHARCOAL,
+                              border: `1px solid ${BORDER}`,
+                              fontWeight: 600,
+                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.6)",
+                            }}
+                          >
+                            <Share2 className="h-4 w-4" strokeWidth={1.9} />
+                            {t("vault.card.share", "Share")}
                           </motion.button>
                           <motion.button
                             whileTap={{ scale: 0.98 }}
@@ -1435,6 +1478,103 @@ export function AccountCard({
 
 
 
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <AnimatePresence>
+              {shareOpen && (
+                <motion.div
+                  key="share-sheet"
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <motion.button
+                    aria-label="Close"
+                    onClick={() => !shareBusy && setShareOpen(false)}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0"
+                    style={{ background: "rgb(var(--aegis-ink-rgb) / 0.35)", backdropFilter: "blur(4px)" }}
+                  />
+                  <motion.div
+                    role="dialog"
+                    aria-modal="true"
+                    initial={{ y: 12, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 12, opacity: 0 }}
+                    transition={soft}
+                    className="relative z-10 w-full max-w-[420px] rounded-[18px] p-5"
+                    style={{ background: CREAM_SOFT, border: `1px solid ${BORDER}` }}
+                  >
+                    <div className="mb-3 flex items-center justify-between">
+                      <h3 className="text-[15px]" style={{ color: CHARCOAL, fontWeight: 600 }}>
+                        Share {account.issuer || "account"}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => !shareBusy && setShareOpen(false)}
+                        aria-label="Close"
+                      >
+                        <X className="h-4 w-4" strokeWidth={1.8} style={{ color: MUTED }} />
+                      </button>
+                    </div>
+                    <form onSubmit={submitShare} className="flex flex-col gap-3">
+                      <label className="flex flex-col gap-1 text-[12px]" style={{ color: MUTED }}>
+                        Recipient's email
+                        <input
+                          type="email"
+                          value={shareEmail}
+                          onChange={(e) => setShareEmail(e.target.value)}
+                          required
+                          autoComplete="email"
+                          placeholder="friend@example.com"
+                          className="rounded-[10px] border bg-transparent px-3 py-2 text-[14px] outline-none"
+                          style={{ borderColor: BORDER, color: CHARCOAL }}
+                        />
+                      </label>
+                      <p className="text-[11.5px]" style={{ color: MUTED, lineHeight: 1.5 }}>
+                        End-to-end encrypted. They must already have an Aegis
+                        account and have unlocked their vault at least once.
+                      </p>
+                      {shareError && (
+                        <p className="text-[12px]" style={{ color: DANGER }} role="alert">
+                          {shareError}
+                        </p>
+                      )}
+                      <div className="mt-1 flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setShareOpen(false)}
+                          disabled={shareBusy}
+                          className="rounded-[10px] border px-3 py-2 text-[13px]"
+                          style={{ borderColor: BORDER, color: CHARCOAL }}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={shareBusy || !shareEmail.trim()}
+                          className="flex items-center gap-2 rounded-[10px] px-3 py-2 text-[13px] disabled:opacity-55"
+                          style={{ background: CHARCOAL, color: CREAM_SOFT, fontWeight: 600 }}
+                        >
+                          {shareBusy ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
+                              Sharing…
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="h-3.5 w-3.5" strokeWidth={1.9} />
+                              Share
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </form>
                   </motion.div>
                 </motion.div>
               )}
