@@ -57,6 +57,9 @@ import {
   type FamilySharedAccount,
   type OwnedAccountSummary,
 } from "@/lib/family";
+import { usePlan } from "@/hooks/use-plan";
+import { UpgradePrompt } from "@/components/aegis/upgrade-prompt";
+
 
 export const Route = createFileRoute("/_authenticated/family")({
   head: () => ({
