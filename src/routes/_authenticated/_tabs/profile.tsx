@@ -14,6 +14,12 @@ import {
 } from "@/lib/subscriptions.functions";
 import { avatarPathFor, fileToSquareJpeg } from "@/lib/avatar";
 import {
+  cacheAvatarFromUrl,
+  clearAvatarBlob,
+  getAvatarBlob,
+  putAvatarBlob,
+} from "@/lib/avatar-cache";
+import {
   User,
   Mail,
   Loader2,
