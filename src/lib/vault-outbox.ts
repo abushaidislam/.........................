@@ -48,6 +48,9 @@ export interface CreatePayload {
   otp_type?: "totp" | "hotp" | "steam";
   counter_ciphertext_hex?: string | null;
   counter_iv_hex?: string | null;
+  // Phase 12: per-row on-disk crypto format version. Optional so items
+  // queued by pre-v3 clients still flush (treated as 2 on the server).
+  crypto_version?: number;
 }
 
 export type OutboxEntry =

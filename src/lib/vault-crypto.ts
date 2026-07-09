@@ -311,16 +311,30 @@ export async function upgradeKdfToV2(
 
 /* -------------------- secret encryption -------------------- */
 
+// Per-row on-disk format version for encrypted vault_accounts rows.
+//   v2 (legacy): AES-GCM(secret) with no additionalData.
+//   v3 (current default): AES-GCM(secret) with additionalData bound to
+//                         `${userId}|${accountId}` — swapping rows across
+//                         accounts or users invalidates the tag.
+// The write path always emits v3; the read path honors the row's
+// `crypto_version` column so v2 rows keep decrypting until the background
+// migrator upgrades them in place.
+export const VAULT_ROW_CRYPTO_VERSION = 3 as const;
+
+/** AAD bound to (user_id, account_id). Both must be known before encrypt. */
+export function buildAccountAad(userId: string, accountId: string): Uint8Array {
+  return enc.encode(`${userId}|${accountId}`);
+}
+
 export async function encryptSecret(
   dek: CryptoKey,
   plaintext: string,
+  aad?: Uint8Array,
 ): Promise<{ ciphertext: Uint8Array; iv: Uint8Array }> {
   const iv = randomBytes(12);
-  const ct = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: iv as unknown as BufferSource },
-    dek,
-    enc.encode(plaintext),
-  );
+  const params: AesGcmParams = { name: "AES-GCM", iv: iv as unknown as BufferSource };
+  if (aad) params.additionalData = aad as unknown as BufferSource;
+  const ct = await crypto.subtle.encrypt(params, dek, enc.encode(plaintext));
   return { ciphertext: new Uint8Array(ct), iv };
 }
 
@@ -328,12 +342,11 @@ export async function decryptSecret(
   dek: CryptoKey,
   ciphertext: Uint8Array,
   iv: Uint8Array,
+  aad?: Uint8Array,
 ): Promise<string> {
-  const pt = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: iv as unknown as BufferSource },
-    dek,
-    ciphertext as unknown as BufferSource,
-  );
+  const params: AesGcmParams = { name: "AES-GCM", iv: iv as unknown as BufferSource };
+  if (aad) params.additionalData = aad as unknown as BufferSource;
+  const pt = await crypto.subtle.decrypt(params, dek, ciphertext as unknown as BufferSource);
   return dec.decode(pt);
 }
 

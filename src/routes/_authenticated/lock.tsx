@@ -12,6 +12,7 @@ import {
   toByteaHex,
 } from "@/lib/vault-crypto";
 import { setVaultKey } from "@/lib/vault-session";
+import { runV3Migration } from "@/lib/vault-migrator";
 import {
   getFailureCount,
   recordFailure,
@@ -285,6 +286,9 @@ function LockPage() {
             }
           })();
         }
+        // Phase 12.2: background row-level v2 → v3 re-encrypt. Runs
+        // silently, telemetry lands in `client_errors` on completion.
+        void runV3Migration(user.id, dek);
         routeAfterUnlock();
       } catch (cryptoErr) {
         // WebCrypto throws OperationError with an empty message in Chrome
@@ -329,6 +333,7 @@ function LockPage() {
     try {
       const dek = await unlockWithBiometric(user.id);
       setVaultKey(dek);
+      void runV3Migration(user.id, dek);
       routeAfterUnlock();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Biometric unlock failed.";
