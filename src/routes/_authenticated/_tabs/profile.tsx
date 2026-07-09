@@ -929,7 +929,7 @@ function ThemeSheet({
       exit={{ opacity: 0 }}
     >
       <motion.button
-        aria-label="Close"
+        aria-label={t("common.close", "Close")}
         onClick={onClose}
         className="absolute inset-0"
         style={{ background: "rgb(var(--aegis-ink-rgb) / 0.35)", backdropFilter: "blur(4px)" }}
@@ -954,7 +954,7 @@ function ThemeSheet({
           className="mb-3 px-1 text-[11px] uppercase"
           style={{ color: MUTED, letterSpacing: "0.14em", fontWeight: 600 }}
         >
-          Appearance
+          {t("appearance.title", "Appearance")}
         </div>
         <div
           className="overflow-hidden rounded-[16px]"
@@ -978,7 +978,7 @@ function ThemeSheet({
           className="mt-3 w-full rounded-[14px] px-4 py-3 text-[13.5px]"
           style={{ color: MUTED, fontWeight: 500 }}
         >
-          Cancel
+          {t("common.cancel", "Cancel")}
         </button>
       </motion.div>
     </motion.div>
