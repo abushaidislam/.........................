@@ -227,6 +227,7 @@ function ProfilePage() {
   const [deleting, setDeleting] = useState(false);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarVersion, setAvatarVersion] = useState(0);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const [avatarSheet, setAvatarSheet] = useState(false);
   const [themeSheet, setThemeSheet] = useState(false);
