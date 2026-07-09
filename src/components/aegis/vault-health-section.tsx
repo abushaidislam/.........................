@@ -32,7 +32,6 @@ import {
   type VaultHealthReport,
 } from "@/lib/vault-health";
 import { usePlan } from "@/hooks/use-plan";
-import { UpgradePrompt } from "@/components/aegis/upgrade-prompt";
 import { BreachUpgradeCard } from "@/components/aegis/breach-upgrade-card";
 
 
