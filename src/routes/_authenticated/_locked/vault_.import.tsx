@@ -80,6 +80,32 @@ function ImportPage() {
   const jsonInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
+  // Preflight cap check — mirrors the Add-account gate. Prevents Free users
+  // from decoding/decrypting an entire export only to have the DB quota
+  // trigger reject most rows at save time.
+  const plan = usePlan();
+  const [accountCount, setAccountCount] = useState<number | null>(null);
+  useEffect(() => {
+    const key = getVaultKey();
+    if (!key) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const cached = await readCachedAccountsOnly(key, user.id);
+        if (!cancelled) setAccountCount(cached?.length ?? 0);
+      } catch {
+        if (!cancelled) setAccountCount(0);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user.id]);
+  const cap = plan.getLimit("maxAccounts");
+  const capFinite = Number.isFinite(cap);
+  const remaining = capFinite && accountCount !== null ? Math.max(0, cap - accountCount) : Number.POSITIVE_INFINITY;
+  const atCap = !plan.loading && accountCount !== null && capFinite && accountCount >= cap;
+
   const showPreview = (p: Preview) => {
     if (p.entries.length === 0) {
       setNotice({
