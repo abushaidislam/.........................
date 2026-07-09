@@ -1231,6 +1231,11 @@ function PlanSheet({
   onManage: () => void;
   onClose: () => void;
 }) {
+  const { i18n } = useLingui();
+  const t = (id: string, fallback: string, values?: Record<string, unknown>) => {
+    const msg = i18n._(id, values);
+    return msg === id ? fallback : msg;
+  };
   const isPaid = tier !== "free" && ["active", "trialing"].includes(status);
   const renews = currentPeriodEnd ? new Date(currentPeriodEnd).toLocaleDateString() : null;
   return (
@@ -1241,7 +1246,7 @@ function PlanSheet({
       exit={{ opacity: 0 }}
     >
       <motion.button
-        aria-label="Close"
+        aria-label={t("common.close", "Close")}
         onClick={onClose}
         className="absolute inset-0"
         style={{ background: "rgb(var(--aegis-ink-rgb) / 0.35)", backdropFilter: "blur(4px)" }}
@@ -1266,21 +1271,21 @@ function PlanSheet({
           className="mb-3 px-1 text-[11px] uppercase"
           style={{ color: MUTED, letterSpacing: "0.14em", fontWeight: 600 }}
         >
-          Plan &amp; billing
+          {t("plan.sheet.title", "Plan & billing")}
         </div>
 
         {isPaid ? (
           <div className="flex flex-col gap-3 px-1 pb-2">
             <div className="rounded-[14px] px-4 py-3.5" style={{ border: `1px solid ${BORDER}` }}>
               <div className="text-[14.5px]" style={{ color: CHARCOAL, fontWeight: 600 }}>
-                {tier === "family" ? "Aegis Family" : "Aegis Pro"} · {status}
+                {tier === "family" ? t("plan.name.family", "Aegis Family") : t("plan.name.pro", "Aegis Pro")} · {status}
               </div>
               <div className="mt-1 text-[12.5px]" style={{ color: MUTED }}>
-                Up to 500 accounts.{" "}
+                {t("plan.paid.description", "Up to 500 accounts.")}{" "}
                 {renews
                   ? cancelAtPeriodEnd
-                    ? `Ends ${renews}.`
-                    : `Renews ${renews}.`
+                    ? t("plan.paid.ends", `Ends ${renews}.`, { date: renews })
+                    : t("plan.paid.renews", `Renews ${renews}.`, { date: renews })
                   : ""}
               </div>
             </div>
@@ -1292,17 +1297,17 @@ function PlanSheet({
               style={{ background: CHARCOAL, color: CREAM_SOFT, fontWeight: 500 }}
             >
               {busy === "portal" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" strokeWidth={1.8} />}
-              Manage billing
+              {t("plan.manageBilling", "Manage billing")}
             </motion.button>
           </div>
         ) : (
           <div className="flex flex-col gap-2 px-1 pb-1">
             <div className="rounded-[14px] px-4 py-3.5" style={{ border: `1px solid ${BORDER}` }}>
               <div className="text-[14.5px]" style={{ color: CHARCOAL, fontWeight: 600 }}>
-                Free
+                {t("plan.tier.free", "Free")}
               </div>
               <div className="mt-1 text-[12.5px]" style={{ color: MUTED }}>
-                Up to 25 accounts. Encrypted sync included.
+                {t("plan.free.description", "Up to 25 accounts. Encrypted sync included.")}
               </div>
             </div>
             <motion.button
@@ -1314,9 +1319,9 @@ function PlanSheet({
             >
               <div className="flex flex-col">
                 <span className="text-[14px]" style={{ fontWeight: 600 }}>
-                  Upgrade to Pro
+                  {t("plan.upgradePro", "Upgrade to Pro")}
                 </span>
-                <span className="text-[12px] opacity-80">Up to 500 accounts.</span>
+                <span className="text-[12px] opacity-80">{t("plan.upgradePro.description", "Up to 500 accounts.")}</span>
               </div>
               {busy === "pro" ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1333,10 +1338,10 @@ function PlanSheet({
             >
               <div className="flex flex-col">
                 <span className="text-[14px]" style={{ fontWeight: 600 }}>
-                  Upgrade to Family
+                  {t("plan.upgradeFamily", "Upgrade to Family")}
                 </span>
                 <span className="text-[12px]" style={{ color: MUTED }}>
-                  Everything in Pro + share with up to 6 members.
+                  {t("plan.upgradeFamily.description", "Everything in Pro + share with up to 6 members.")}
                 </span>
               </div>
               {busy === "family" ? (
@@ -1352,7 +1357,7 @@ function PlanSheet({
           className="mt-3 w-full rounded-[14px] px-4 py-3 text-[13.5px]"
           style={{ color: MUTED, fontWeight: 500 }}
         >
-          Close
+          {t("common.close", "Close")}
         </button>
       </motion.div>
     </motion.div>
