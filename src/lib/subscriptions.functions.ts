@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { getLimit, type PlanTier } from "@/lib/plan";
 
 /**
  * Phase 13.3 — Billing server functions.
