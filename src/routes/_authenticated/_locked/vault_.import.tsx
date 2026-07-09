@@ -312,7 +312,6 @@ function ImportPage() {
             {atCap ? (
               <div className="pt-2">
                 <UpgradePrompt
-                  feature="unlimited-accounts"
                   title={`You're at your ${cap}-account limit`}
                   body="Free plans hold up to 25 accounts. Upgrade to Pro to import more and unlock 500 slots."
                 />
