@@ -467,6 +467,7 @@ function generateClientId(): string {
  * the UI reflects the intent, and the server DELETE runs on reconnect.
  */
 export async function deleteAccount(id: string): Promise<{ queued: boolean }> {
+  assertWritable();
   const attempt = async () => {
     const { error } = await supabase.from("vault_accounts").delete().eq("id", id);
     if (error) throw error;
