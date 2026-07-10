@@ -891,12 +891,12 @@ function PinDisplay({
 }) {
   const dots = Array.from({ length: PIN_MAX_LENGTH });
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-1.5">
       <span className="text-[12px]" style={{ color: MUTED, letterSpacing: "-0.005em" }}>
         {label}
       </span>
       <div
-        className="flex h-[54px] w-full items-center justify-center gap-2.5 rounded-[12px]"
+        className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[12px]"
         style={{
           background: CREAM_SOFT,
           border: `1px solid ${BORDER}`,
@@ -916,8 +916,8 @@ function PinDisplay({
                 transition={{ type: "spring", stiffness: 500, damping: 24 }}
                 className="rounded-full"
                 style={{
-                  width: filled ? 12 : 8,
-                  height: filled ? 12 : 8,
+                  width: filled ? 10 : 7,
+                  height: filled ? 10 : 7,
                   background: filled
                     ? CHARCOAL
                     : past
