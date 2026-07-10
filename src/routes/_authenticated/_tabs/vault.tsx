@@ -44,7 +44,8 @@ import {
 } from "@/lib/vault-tag-queue";
 import { useOnlineStatus } from "@/lib/use-online";
 import { onSyncOpportunity } from "@/lib/sync-coordinator";
-import { requestPersistentStorage, getStorageStatus } from "@/lib/storage-quota";
+import { requestPersistentStorage, getStorageStatus, evictNonEssentialCaches } from "@/lib/storage-quota";
+import { deadLetterCount } from "@/lib/vault-outbox";
 import { AccountCard } from "@/components/vault/AccountCard";
 import { PRESET_TAGS, TagChip } from "@/components/vault/tags";
 import { ExportPassphraseSheet } from "@/components/vault/ExportPassphraseSheet";
@@ -469,8 +470,14 @@ function VaultPage() {
     void (async () => {
       try {
         await requestPersistentStorage();
-        const status = await getStorageStatus();
+        let status = await getStorageStatus();
         if (cancelled) return;
+        // First response: silently evict non-essential caches (avatars)
+        // and re-measure before nagging the user.
+        if (status.nearLimit) {
+          status = await evictNonEssentialCaches();
+          if (cancelled) return;
+        }
         if (status.nearLimit && status.ratio !== null) {
           const pct = Math.round(status.ratio * 100);
           toast.warning(
@@ -495,6 +502,7 @@ function VaultPage() {
   // sync. The coordinator dedupes across tabs so we don't double-post
   // when two windows are open.
   useEffect(() => {
+    let warnedDeadLetter = false;
     return onSyncOpportunity(async () => {
       try {
         const n = await flushPendingOutbox();
@@ -510,6 +518,21 @@ function VaultPage() {
             ),
           );
           setReloadKey((k) => k + 1);
+        }
+        // Surface stuck entries once per mount so the user knows silent
+        // retries aren't going to save them.
+        const stuck = deadLetterCount();
+        if (stuck > 0 && !warnedDeadLetter) {
+          warnedDeadLetter = true;
+          toast.error(
+            t(
+              stuck === 1
+                ? "vault.toast.deadLetter.one"
+                : "vault.toast.deadLetter.other",
+              `${stuck} change${stuck === 1 ? "" : "s"} can't sync — check your vault.`,
+              { count: stuck },
+            ),
+          );
         }
       } catch {
         // best-effort; the coordinator will fire again on the next
