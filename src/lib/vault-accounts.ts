@@ -927,10 +927,15 @@ export function mergeAccountRows(
   recentFavToggles: Record<string, boolean>,
 ): VaultAccountRecord[] {
   return serverRows.map((row) => {
-    const override = recentFavToggles[row.id];
-    if (override === undefined) return row;
-    if (row.is_favorite === override) return row;
-    return { ...row, is_favorite: override };
+    // Outbox intent is authoritative until it flushes — a stuck favorite
+    // entry (e.g. failing writes over many minutes) must keep winning the
+    // merge even after the 60s optimistic window expires. Fall back to
+    // the fresh optimistic map only when nothing is queued.
+    const queued = pendingFavoriteFor(row.id);
+    const effective = queued !== undefined ? queued : recentFavToggles[row.id];
+    if (effective === undefined) return row;
+    if (row.is_favorite === effective) return row;
+    return { ...row, is_favorite: effective };
   });
 }
 
