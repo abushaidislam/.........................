@@ -172,68 +172,20 @@ function AuthPage() {
       : t("auth.hero.sub", "Create an account or log in to sync your codes.");
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col overflow-hidden"
-      style={{ background: "#0d0d1b" }}
+    <StarfieldHeroLayout
+      heroKey={mode}
+      heroTitle={heroTitle}
+      heroSubtitle={heroSub}
     >
-      {/* ---------------- Dark hero ---------------- */}
-      <div className="relative shrink-0" style={{ minHeight: "36vh" }}>
-        <Starfield />
-        <div className="relative z-10 flex h-full flex-col px-6 pt-[max(28px,env(safe-area-inset-top))] pb-8">
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={soft}
-          >
-            <BrandRow />
-          </motion.div>
+      <div className="flex flex-col gap-5">
+        <SegmentedTabs
+          mode={mode}
+          onChange={(next) => {
+            setNotice(null);
+            setMode(next);
+          }}
+        />
 
-          <div className="mt-8 flex flex-col gap-2.5">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.h1
-                key={mode + "-hero"}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={soft}
-                className="text-white"
-                style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontSize: 40,
-                  lineHeight: 1.05,
-                  fontWeight: 600,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                {heroTitle}
-              </motion.h1>
-            </AnimatePresence>
-            <motion.p
-              key={mode + "-sub"}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 0.72, y: 0 }}
-              transition={{ ...soft, delay: 0.05 }}
-              className="max-w-[34ch] text-[14.5px] leading-[1.5] text-white"
-            >
-              {heroSub}
-            </motion.p>
-          </div>
-        </div>
-      </div>
-
-      {/* ---------------- Sheet ---------------- */}
-      <motion.div
-        initial={{ y: 24, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ ...soft, delay: 0.05 }}
-        className="relative -mt-6 flex flex-1 flex-col overflow-y-auto rounded-t-[28px] px-6 pt-6 pb-[max(24px,env(safe-area-inset-bottom))]"
-        style={{
-          background: CREAM,
-          boxShadow: "0 -14px 40px -20px rgba(0,0,0,0.35)",
-          color: CHARCOAL,
-        }}
-      >
-        <div className="mx-auto flex w-full max-w-[440px] flex-col gap-5">
           <SegmentedTabs
             mode={mode}
             onChange={(next) => {
