@@ -5,15 +5,17 @@
 //     handle incoming access requests.
 //   • Recover for others (I received): request/unlock grantors' vaults.
 
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useLingui } from "@lingui/react";
-import { ArrowLeft, LifeBuoy, Loader2, Trash2, UserPlus, Unlock, Clock, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Loader2, Trash2, UserPlus, Unlock, Clock, ShieldCheck } from "lucide-react";
+import { useRouter } from "@tanstack/react-router";
 import { AegisScreen, BORDER, CHARCOAL, MUTED, Notice } from "@/components/aegis/chrome";
 import { AppBar, AppBarButton, LargeTitle, SectionLabel, SettingsGroup } from "@/components/aegis/settings";
 import { usePlan } from "@/hooks/use-plan";
 import { UpgradePrompt } from "@/components/aegis/upgrade-prompt";
+import { setVaultKey, useVaultUnlocked } from "@/lib/vault-session";
 import { setVaultKey, useVaultUnlocked } from "@/lib/vault-session";
 import {
   approveRequest,
@@ -380,6 +382,7 @@ function EmergencyPage() {
           </div>
         </>
       )}
+      </div>
     </AegisScreen>
   );
 }
@@ -411,5 +414,3 @@ function shortId(id: string): string {
   return id.slice(0, 6);
 }
 
-// Re-export unused import to silence lint if needed
-void LifeBuoy;
