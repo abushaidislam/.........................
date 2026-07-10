@@ -89,6 +89,7 @@ import {
   hasStoredPassphrase,
   initAutoBackup,
   runAutoBackupNow,
+  setAutoBackupPlanGate,
   subscribeAutoBackup,
   updateAutoBackupSettings,
   type AutoBackupFrequency,
@@ -181,6 +182,10 @@ function SecurityPage() {
   // Boot the auto-backup scheduler for this user; refresh UI on settings/status changes.
   // Also surface success/error events as toast notifications so the user gets feedback
   // even when the Auto-backup sheet is closed.
+  useEffect(() => {
+    setAutoBackupPlanGate(canAutoBackup);
+  }, [canAutoBackup]);
+
   useEffect(() => {
     initAutoBackup(user.id);
     setAutoBackup(getAutoBackupSettings(user.id));
