@@ -204,7 +204,7 @@ function ProfilePage() {
       window.history.replaceState({}, "", url.toString());
       return () => clearInterval(iv);
     }
-  }, [refetchSub]);
+  }, [refetchSub, queryClient]);
 
   // When the paid tier actually lands (via webhook), reveal the welcome
   // sheet exactly once per upgrade. Keyed by tier so a later Pro→Family
