@@ -985,7 +985,7 @@ function Keypad({
   }, [onDigit, onDelete, onSubmit, submitReady]);
 
   return (
-    <div ref={btnRef} className="grid grid-cols-3 gap-2.5 sm:gap-3">
+    <div ref={btnRef} className="grid grid-cols-3 gap-2">
       {keys.map((k, i) => {
         if (k === "") return <span key={i} />;
         if (k === "del") {
@@ -1015,7 +1015,7 @@ function Keypad({
         }
         return (
           <KeypadButton key={i} onClick={() => onDigit(k)} ariaLabel={`Digit ${k}`}>
-            <span className="text-[22px] font-semibold tabular-nums">{k}</span>
+            <span className="text-[19px] font-semibold tabular-nums">{k}</span>
           </KeypadButton>
         );
       })}
