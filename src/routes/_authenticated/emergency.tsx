@@ -16,7 +16,6 @@ import { AppBar, AppBarButton, LargeTitle, SectionLabel, SettingsGroup } from "@
 import { usePlan } from "@/hooks/use-plan";
 import { UpgradePrompt } from "@/components/aegis/upgrade-prompt";
 import { setVaultKey, useVaultUnlocked } from "@/lib/vault-session";
-import { setVaultKey, useVaultUnlocked } from "@/lib/vault-session";
 import {
   approveRequest,
   inviteContact,
