@@ -788,4 +788,6 @@ export const messages: Record<string, string> = {
   "vault.readOnly.banner": "केवल-पढ़ने योग्य रिकवरी वॉल्ट — आप किसी अन्य उपयोगकर्ता के कोड देख रहे हैं। लेखन अक्षम है।",
   "vault.readOnly.blocked": "केवल-पढ़ने योग्य रिकवरी वॉल्ट — लेखन अक्षम है।",
   "vault.readOnly.exit": "बाहर निकलें",
+  "vault.toast.storageNearLimit": "डिवाइस स्टोरेज {pct}% भरा है — ऑफ़लाइन वॉल्ट हटाया जा सकता है।",
+  "vault.toast.deadLetter.retry": "पुनः प्रयास",
 };

@@ -788,4 +788,6 @@ export const messages: Record<string, string> = {
   "vault.readOnly.banner": "Cofre de recuperação somente leitura — você está vendo códigos de outro usuário. Gravações desabilitadas.",
   "vault.readOnly.blocked": "Cofre de recuperação somente leitura — gravações desabilitadas.",
   "vault.readOnly.exit": "Sair",
+  "vault.toast.storageNearLimit": "O armazenamento do dispositivo está {pct}% cheio — o cofre offline pode ser removido.",
+  "vault.toast.deadLetter.retry": "Tentar novamente",
 };

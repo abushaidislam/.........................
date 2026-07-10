@@ -788,4 +788,6 @@ export const messages: Record<string, string> = {
   "vault.readOnly.banner": "Bóveda de recuperación de solo lectura — estás viendo códigos de otro usuario. Las escrituras están deshabilitadas.",
   "vault.readOnly.blocked": "Bóveda de recuperación de solo lectura — las escrituras están deshabilitadas.",
   "vault.readOnly.exit": "Salir",
+  "vault.toast.storageNearLimit": "El almacenamiento del dispositivo está lleno al {pct}% — el vault sin conexión puede eliminarse.",
+  "vault.toast.deadLetter.retry": "Reintentar",
 };
