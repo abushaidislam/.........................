@@ -194,6 +194,14 @@ export function useVaultUnlocked(): boolean {
   return unlocked;
 }
 
+export function useVaultReadOnly(): boolean {
+  const [ro, setRo] = useState<boolean>(() => isVaultReadOnly());
+  useEffect(() => {
+    return subscribe(() => setRo(isVaultReadOnly()));
+  }, []);
+  return ro;
+}
+
 export function useAutoLockMs(): number | null {
   const [value, setValue] = useState<number | null>(() => getAutoLockMs());
   useEffect(() => {
