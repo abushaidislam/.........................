@@ -788,4 +788,6 @@ export const messages: Record<string, string> = {
   "vault.readOnly.banner": "読み取り専用の復旧金庫 — 他のユーザーのコードを表示しています。書き込みは無効です。",
   "vault.readOnly.blocked": "読み取り専用の復旧金庫 — 書き込みは無効です。",
   "vault.readOnly.exit": "終了",
+  "vault.toast.storageNearLimit": "デバイスのストレージが{pct}%使用中 — オフライン金庫が削除される可能性があります。",
+  "vault.toast.deadLetter.retry": "再試行",
 };

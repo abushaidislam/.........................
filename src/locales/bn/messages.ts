@@ -788,4 +788,6 @@ export const messages: Record<string, string> = {
   "vault.readOnly.banner": "শুধু-পঠন পুনরুদ্ধার ভল্ট — আপনি অন্য ব্যবহারকারীর কোড দেখছেন। লেখা নিষ্ক্রিয়।",
   "vault.readOnly.blocked": "শুধু-পঠন পুনরুদ্ধার ভল্ট — লেখা নিষ্ক্রিয়।",
   "vault.readOnly.exit": "প্রস্থান",
+  "vault.toast.storageNearLimit": "ডিভাইস স্টোরেজ {pct}% পূর্ণ — অফলাইন ভল্ট মুছে যেতে পারে।",
+  "vault.toast.deadLetter.retry": "পুনরায় চেষ্টা",
 };

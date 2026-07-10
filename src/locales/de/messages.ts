@@ -788,4 +788,6 @@ export const messages: Record<string, string> = {
   "vault.readOnly.banner": "Schreibgeschützter Wiederherstellungstresor — du siehst die Codes eines anderen Nutzers. Schreiben ist deaktiviert.",
   "vault.readOnly.blocked": "Schreibgeschützter Wiederherstellungstresor — Schreiben ist deaktiviert.",
   "vault.readOnly.exit": "Beenden",
+  "vault.toast.storageNearLimit": "Gerätespeicher ist zu {pct}% voll — Offline-Tresor kann entfernt werden.",
+  "vault.toast.deadLetter.retry": "Erneut versuchen",
 };

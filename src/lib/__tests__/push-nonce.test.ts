@@ -40,8 +40,9 @@ describe("canonicalJson", () => {
 
 describe("serializeForSign", () => {
   it("is stable across payload key order", () => {
-    const a = serializeForSign(material({ payload: { a: 1, b: 2 } }));
-    const b = serializeForSign(material({ payload: { b: 2, a: 1 } }));
+    const exp = Date.now() + DEFAULT_NONCE_TTL_MS;
+    const a = serializeForSign(material({ expiresAt: exp, payload: { a: 1, b: 2 } }));
+    const b = serializeForSign(material({ expiresAt: exp, payload: { b: 2, a: 1 } }));
     expect(a).toBe(b);
   });
   it("changes when any field changes", () => {

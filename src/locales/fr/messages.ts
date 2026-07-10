@@ -788,4 +788,6 @@ export const messages: Record<string, string> = {
   "vault.readOnly.banner": "Coffre de récupération en lecture seule — vous consultez les codes d'un autre utilisateur. Écritures désactivées.",
   "vault.readOnly.blocked": "Coffre de récupération en lecture seule — écritures désactivées.",
   "vault.readOnly.exit": "Quitter",
+  "vault.toast.storageNearLimit": "Le stockage de l'appareil est plein à {pct} % — le coffre hors ligne peut être supprimé.",
+  "vault.toast.deadLetter.retry": "Réessayer",
 };
