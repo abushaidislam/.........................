@@ -4,6 +4,7 @@
 
 import * as OTPAuth from "otpauth";
 import { supabase } from "@/integrations/supabase/client";
+import { assertWritable } from "@/lib/vault-session";
 import {
   buildAccountAad,
   decryptSecret,
@@ -252,6 +253,7 @@ export async function addAccount(
     counter?: number;
   },
 ): Promise<{ queued: boolean }> {
+  assertWritable();
   const clean = normalizeBase32(input.secret);
   if (!isValidBase32Secret(clean)) throw new Error("Invalid secret. Must be base32.");
 
