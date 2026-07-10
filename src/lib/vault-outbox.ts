@@ -53,11 +53,12 @@ export interface CreatePayload {
   crypto_version?: number;
 }
 
-export type OutboxEntry =
+export type OutboxEntry = (
   | { kind: "create"; id: string; payload: CreatePayload; queuedAt: number }
   | { kind: "delete"; id: string; queuedAt: number }
   | { kind: "update-details"; id: string; issuer: string; label: string; queuedAt: number }
-  | { kind: "favorite"; id: string; isFavorite: boolean; queuedAt: number };
+  | { kind: "favorite"; id: string; isFavorite: boolean; queuedAt: number }
+) & { attempts?: number; nextRetryAt?: number };
 
 function safeGetStorage(): Storage | null {
   try {
