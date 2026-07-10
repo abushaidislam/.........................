@@ -195,3 +195,100 @@ export function StarfieldHeroLayout({
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Shared sheet primitives (used across auth, reset, callback screens)       */
+/* -------------------------------------------------------------------------- */
+
+export function FieldGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span
+        className="text-[12.5px] font-medium"
+        style={{ color: MUTED, letterSpacing: "-0.005em" }}
+      >
+        {label}
+      </span>
+      <div
+        className="flex h-[48px] items-center gap-2.5 rounded-[12px] px-3.5"
+        style={{
+          background: CREAM_SOFT,
+          border: `1px solid ${BORDER}`,
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.5)",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export function BlueButton({
+  children,
+  type = "button",
+  loading,
+  disabled,
+  onClick,
+}: {
+  children: ReactNode;
+  type?: "button" | "submit";
+  loading?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <motion.button
+      type={type}
+      onClick={onClick}
+      disabled={disabled || loading}
+      whileTap={disabled || loading ? undefined : { scale: 0.985, opacity: 0.95 }}
+      transition={spring}
+      className="relative flex h-[50px] w-full items-center justify-center rounded-[12px] text-[15px] font-semibold text-white outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60"
+      style={{
+        background: "linear-gradient(180deg, #4f6bff 0%, #3548d1 100%)",
+        boxShadow:
+          "inset 0 1px 0 rgba(255,255,255,0.28), 0 12px 24px -12px rgba(53,72,209,0.55), 0 2px 4px rgba(53,72,209,0.2)",
+        letterSpacing: "-0.005em",
+        ["--tw-ring-color" as string]: "rgba(53,72,209,0.55)",
+        ["--tw-ring-offset-color" as string]: CREAM,
+      }}
+    >
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : children}
+    </motion.button>
+  );
+}
+
+export function InlineNotice({
+  kind,
+  children,
+}: {
+  kind: "error" | "info";
+  children: ReactNode;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={soft}
+      className="rounded-[10px] px-3 py-2 text-[12.5px] leading-snug"
+      style={{
+        background:
+          kind === "error"
+            ? "rgb(var(--aegis-danger-rgb) / 0.08)"
+            : "rgb(var(--aegis-ink-rgb) / 0.05)",
+        color: kind === "error" ? DANGER : CHARCOAL,
+        border: `1px solid ${
+          kind === "error" ? "rgb(var(--aegis-danger-rgb) / 0.15)" : BORDER
+        }`,
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
