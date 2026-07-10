@@ -296,6 +296,7 @@ function SecurityPage() {
 
       <div className="flex flex-col gap-1 pt-1">
         <VaultHealthHero />
+        <VaultHealthTips />
 
         <SectionLabel>{t("security.section.vault", "Vault")}</SectionLabel>
         <SettingsGroup>
