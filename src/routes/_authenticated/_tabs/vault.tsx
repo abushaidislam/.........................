@@ -562,6 +562,21 @@ function VaultPage() {
     });
   }, []);
 
+  // Cross-tab sync: when a sibling tab mutates the vault / outbox / tags
+  // caches, re-render so we see their changes without waiting for the
+  // next server sync.
+  useEffect(() => {
+    return onCacheMutation((surface) => {
+      if (surface === "vault" || surface === "outbox") {
+        setReloadKey((k) => k + 1);
+      }
+      if (surface === "outbox" || surface === "tags") {
+        setPendingOutbox(pendingOutboxCount());
+        setPendingTagCount(listQueuedTagUpdates().length);
+      }
+    });
+  }, []);
+
   const retry = useCallback(() => {
     setRetrying(true);
     setReloadKey((k) => k + 1);
