@@ -459,6 +459,36 @@ function VaultPage() {
     };
   }, []);
 
+  // Ask the browser to keep our IndexedDB mirror persistent (so the OS
+  // can't silently evict it under storage pressure) and warn the user
+  // once if we're already over 85% of quota. Fire-and-forget, once per
+  // mount — the API is idempotent.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        await requestPersistentStorage();
+        const status = await getStorageStatus();
+        if (cancelled) return;
+        if (status.nearLimit && status.ratio !== null) {
+          const pct = Math.round(status.ratio * 100);
+          toast.warning(
+            t(
+              "vault.toast.storageNearLimit",
+              `Device storage is ${pct}% full — offline vault may be evicted.`,
+              { pct },
+            ),
+          );
+        }
+      } catch {
+        // best-effort — never let a storage probe surface as an error
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Auto-flush the offline outbox on every real sync opportunity: server
   // reachable, tab focused, tab visible, or another tab requested a
   // sync. The coordinator dedupes across tabs so we don't double-post
