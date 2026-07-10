@@ -4,13 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLingui } from "@lingui/react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
-import { Loader2, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import {
   BORDER,
   CHARCOAL,
-  CREAM,
   CREAM_SOFT,
-  DANGER,
   GoogleIcon,
   MUTED,
   inputClass,
@@ -19,7 +17,12 @@ import {
   spring,
 } from "@/components/aegis/chrome";
 import { PasswordField, StrengthMeter, scoreStrength } from "@/components/aegis/password-field";
-import { StarfieldHeroLayout } from "@/components/aegis/starfield-hero";
+import {
+  BlueButton,
+  FieldGroup,
+  InlineNotice,
+  StarfieldHeroLayout,
+} from "@/components/aegis/starfield-hero";
 
 const LAST_EMAIL_KEY = "aegis.auth.lastEmail";
 
