@@ -390,6 +390,7 @@ export async function advanceHotpCounter(
   currentCounter: number,
   rowCryptoVersion?: number,
 ): Promise<{ counter: number; queued: boolean }> {
+  assertWritable();
   const next = Math.max(0, Math.floor(currentCounter)) + 1;
   // v3 rows: bind ciphertext to (user_id | account_id). v2 rows: no AAD
   // until the background migrator upgrades them. Resolve user only when
