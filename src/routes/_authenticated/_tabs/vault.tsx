@@ -43,6 +43,7 @@ import {
   listQueuedTagUpdates,
 } from "@/lib/vault-tag-queue";
 import { useOnlineStatus } from "@/lib/use-online";
+import { onSyncOpportunity } from "@/lib/sync-coordinator";
 import { AccountCard } from "@/components/vault/AccountCard";
 import { PRESET_TAGS, TagChip } from "@/components/vault/tags";
 import { ExportPassphraseSheet } from "@/components/vault/ExportPassphraseSheet";
@@ -504,20 +505,16 @@ function VaultPage() {
     }
   }, [refreshPendingCount, syncingTags]);
 
-  // Auto-flush whenever the browser reports we're back online, and when the
-  // component mounts online with pending updates.
+  // Auto-flush on any real sync opportunity — server reachable, tab
+  // returned to focus, tab visible again, or another tab requested a
+  // sync. The coordinator handles cross-tab deduping so we don't double-
+  // flush when two tabs are open.
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const flush = () => {
-      if (!navigator.onLine) return;
+    return onSyncOpportunity(() => {
       if (!hasQueuedTagUpdates()) return;
       void syncPendingTags();
-    };
-    window.addEventListener("online", flush);
-    // Fire once at mount too — the app may open online with a queue left
-    // from a previous session.
-    flush();
-    return () => window.removeEventListener("online", flush);
+    });
   }, [syncPendingTags]);
 
   // Keep the pending count fresh whenever the queue may have changed.

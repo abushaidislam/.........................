@@ -27,6 +27,7 @@ import { Route as AuthenticatedApproveRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTabsRouteImport } from './routes/_authenticated/_tabs'
 import { Route as AuthenticatedLockedRouteRouteImport } from './routes/_authenticated/_locked/route'
 import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AuthenticatedTabsVaultRouteImport } from './routes/_authenticated/_tabs/vault'
 import { Route as AuthenticatedTabsSecurityRouteImport } from './routes/_authenticated/_tabs/security'
 import { Route as AuthenticatedTabsProfileRouteImport } from './routes/_authenticated/_tabs/profile'
@@ -124,6 +125,11 @@ const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
   path: '/api/public/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedTabsVaultRoute = AuthenticatedTabsVaultRouteImport.update({
   id: '/vault',
   path: '/vault',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedTabsProfileRoute
   '/security': typeof AuthenticatedTabsSecurityRoute
   '/vault': typeof AuthenticatedTabsVaultRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/vault/import': typeof AuthenticatedLockedVaultImportRoute
   '/vault/new': typeof AuthenticatedLockedVaultNewRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedTabsProfileRoute
   '/security': typeof AuthenticatedTabsSecurityRoute
   '/vault': typeof AuthenticatedTabsVaultRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/vault/import': typeof AuthenticatedLockedVaultImportRoute
   '/vault/new': typeof AuthenticatedLockedVaultNewRoute
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/_authenticated/_tabs/profile': typeof AuthenticatedTabsProfileRoute
   '/_authenticated/_tabs/security': typeof AuthenticatedTabsSecurityRoute
   '/_authenticated/_tabs/vault': typeof AuthenticatedTabsVaultRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/_authenticated/_locked/vault_/import': typeof AuthenticatedLockedVaultImportRoute
   '/_authenticated/_locked/vault_/new': typeof AuthenticatedLockedVaultNewRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/security'
     | '/vault'
+    | '/api/public/health'
     | '/api/public/stripe-webhook'
     | '/vault/import'
     | '/vault/new'
@@ -276,6 +286,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/security'
     | '/vault'
+    | '/api/public/health'
     | '/api/public/stripe-webhook'
     | '/vault/import'
     | '/vault/new'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_tabs/profile'
     | '/_authenticated/_tabs/security'
     | '/_authenticated/_tabs/vault'
+    | '/api/public/health'
     | '/api/public/stripe-webhook'
     | '/_authenticated/_locked/vault_/import'
     | '/_authenticated/_locked/vault_/new'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   BlogAegisVsGoogleAuthenticatorRoute: typeof BlogAegisVsGoogleAuthenticatorRoute
   BlogGoogleAuthenticatorForPcRoute: typeof BlogGoogleAuthenticatorForPcRoute
   DevTokensRoute: typeof DevTokensRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
 }
 
@@ -447,6 +460,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/_tabs/vault': {
       id: '/_authenticated/_tabs/vault'
       path: '/vault'
@@ -571,18 +591,9 @@ const rootRouteChildren: RootRouteChildren = {
   BlogAegisVsGoogleAuthenticatorRoute: BlogAegisVsGoogleAuthenticatorRoute,
   BlogGoogleAuthenticatorForPcRoute: BlogGoogleAuthenticatorForPcRoute,
   DevTokensRoute: DevTokensRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
