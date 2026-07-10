@@ -127,6 +127,8 @@ export function onSyncOpportunity(cb: SyncCb): () => void {
   return () => {
     callbacks.delete(cb);
   };
+}
+
 /**
  * Broadcast a cache-mutation event so sibling tabs know their
  * IndexedDB / localStorage view is stale and should re-render on the
