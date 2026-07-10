@@ -577,7 +577,7 @@ function LockPage() {
     <StarfieldHeroLayout
       heroKey="unlock"
       heroTitle="Unlock your vault"
-      heroSubtitle="Use your passphrase, PIN, or biometrics to decrypt your codes on this device."
+      heroMinVh={16}
     >
       <SegmentedTabs
         value={tab}
@@ -891,12 +891,12 @@ function PinDisplay({
 }) {
   const dots = Array.from({ length: PIN_MAX_LENGTH });
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div className="flex flex-col items-center gap-1.5">
       <span className="text-[12px]" style={{ color: MUTED, letterSpacing: "-0.005em" }}>
         {label}
       </span>
       <div
-        className="flex h-[54px] w-full items-center justify-center gap-2.5 rounded-[12px]"
+        className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[12px]"
         style={{
           background: CREAM_SOFT,
           border: `1px solid ${BORDER}`,
@@ -916,8 +916,8 @@ function PinDisplay({
                 transition={{ type: "spring", stiffness: 500, damping: 24 }}
                 className="rounded-full"
                 style={{
-                  width: filled ? 12 : 8,
-                  height: filled ? 12 : 8,
+                  width: filled ? 10 : 7,
+                  height: filled ? 10 : 7,
                   background: filled
                     ? CHARCOAL
                     : past
@@ -985,7 +985,7 @@ function Keypad({
   }, [onDigit, onDelete, onSubmit, submitReady]);
 
   return (
-    <div ref={btnRef} className="grid grid-cols-3 gap-2.5 sm:gap-3">
+    <div ref={btnRef} className="grid grid-cols-3 gap-2">
       {keys.map((k, i) => {
         if (k === "") return <span key={i} />;
         if (k === "del") {
@@ -1015,7 +1015,7 @@ function Keypad({
         }
         return (
           <KeypadButton key={i} onClick={() => onDigit(k)} ariaLabel={`Digit ${k}`}>
-            <span className="text-[22px] font-semibold tabular-nums">{k}</span>
+            <span className="text-[19px] font-semibold tabular-nums">{k}</span>
           </KeypadButton>
         );
       })}
@@ -1037,7 +1037,7 @@ function KeypadButton({
   ariaLabel?: string;
 }) {
   const base =
-    "flex aspect-square items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-1 transition-colors disabled:opacity-40";
+    "flex h-[48px] items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-1 transition-colors disabled:opacity-40";
   const styles: Record<typeof variant, React.CSSProperties> = {
     digit: {
       background: CREAM_SOFT,
