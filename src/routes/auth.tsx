@@ -352,7 +352,13 @@ function AuthPage() {
                   transition={soft}
                   className="overflow-hidden"
                 >
-                  <FieldGroup label={t("auth.field.password", "Password")}>
+                  <div className="flex flex-col gap-1.5">
+                    <span
+                      className="text-[12.5px] font-medium"
+                      style={{ color: MUTED, letterSpacing: "-0.005em" }}
+                    >
+                      {t("auth.field.password", "Password")}
+                    </span>
                     <PasswordField
                       value={password}
                       onChange={setPassword}
@@ -364,12 +370,12 @@ function AuthPage() {
                           : t("auth.password.placeholder.signin", "Your password")
                       }
                     />
-                  </FieldGroup>
-                  {mode === "signup" && (
-                    <div className="mt-2">
-                      <StrengthMeter value={password} />
-                    </div>
-                  )}
+                    {mode === "signup" && (
+                      <div className="mt-1">
+                        <StrengthMeter value={password} />
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
