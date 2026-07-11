@@ -710,7 +710,7 @@ function LockPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18 }}
-            className="flex flex-col gap-3"
+            className="flex flex-col gap-3 pt-3 sm:pt-2"
           >
             <PinDisplay
               length={pin.length}
