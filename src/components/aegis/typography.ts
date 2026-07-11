@@ -88,7 +88,7 @@ export const typeBodySm: CSSProperties = {
   color: MUTED,
 };
 
-/** Uppercase eyebrow / section label (JetBrains Mono). */
+/** Uppercase eyebrow / section label. */
 export const typeEyebrow: CSSProperties = {
   fontFamily: FONT_SANS,
   fontSize: 9.5,
