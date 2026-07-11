@@ -976,8 +976,8 @@ function StepPro({ next }: { next: () => void }) {
   const reduce = useReducedMotion();
   return (
     <Screen>
-      <div className="flex flex-1 flex-col justify-center gap-5">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-1 flex-col justify-center gap-4">
+        <div className="flex flex-col gap-1.5">
           <Eyebrow>
             <Sparkles className="h-3 w-3" strokeWidth={2} />
             {t("onb.pro.eyebrow", "Aegis Pro")}
@@ -986,44 +986,50 @@ function StepPro({ next }: { next: () => void }) {
           <Lede>{t("onb.pro.body", "Aegis is free forever. Pro unlocks the power features when your vault grows.")}</Lede>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <FeatureRow
-            icon={<InfinityIcon className="h-4 w-4" strokeWidth={1.8} />}
-            title={t("onb.pro.500.title", "500 accounts (vs 25)")}
-            body={t("onb.pro.500.body", "20× the Free vault size — enough for even the busiest security setup.")}
-            delay={0.05}
-          />
-          <FeatureRow
-            icon={<CloudUpload className="h-4 w-4" strokeWidth={1.8} />}
-            title={t("onb.pro.backup.title", "Encrypted cloud backup")}
-            body={t("onb.pro.backup.body", "Auto-synced across every device, with 30-day version history.")}
-            delay={0.10}
-          />
-          <FeatureRow
-            icon={<ShieldAlert className="h-4 w-4" strokeWidth={1.8} />}
-            title={t("onb.pro.breach.title", "Breach monitoring")}
-            body={t("onb.pro.breach.body", "Get alerted the moment one of your accounts leaks.")}
-            delay={0.15}
-          />
-          <FeatureRow
-            icon={<Chrome className="h-4 w-4" strokeWidth={1.8} />}
-            title={t("onb.pro.autofill.title", "Browser autofill")}
-            body={t("onb.pro.autofill.body", "One-tap sign-in from the Aegis extension on any site.")}
-            delay={0.20}
-          />
-          <FeatureRow
-            icon={<Users className="h-4 w-4" strokeWidth={1.8} />}
-            title={t("onb.pro.family.title", "Family sharing")}
-            body={t("onb.pro.family.body", "Up to 6 members with a shared household vault.")}
-            delay={0.25}
-          />
-        </div>
+        {(() => {
+          const tiles = [
+            { icon: <InfinityIcon className="h-4 w-4" strokeWidth={1.8} />, title: t("onb.pro.500.tile", "500 accounts"), sub: t("onb.pro.500.sub", "vs 25 Free") },
+            { icon: <CloudUpload className="h-4 w-4" strokeWidth={1.8} />, title: t("onb.pro.backup.tile", "Cloud backup"), sub: t("onb.pro.backup.sub", "Encrypted · 30-day") },
+            { icon: <ShieldAlert className="h-4 w-4" strokeWidth={1.8} />, title: t("onb.pro.breach.tile", "Breach alerts"), sub: t("onb.pro.breach.sub", "The moment you leak") },
+            { icon: <Chrome className="h-4 w-4" strokeWidth={1.8} />, title: t("onb.pro.autofill.tile", "Autofill"), sub: t("onb.pro.autofill.sub", "One-tap on any site") },
+            { icon: <Users className="h-4 w-4" strokeWidth={1.8} />, title: t("onb.pro.family.tile", "Family sharing"), sub: t("onb.pro.family.sub", "Up to 6 members") },
+          ];
+          return (
+            <div className="grid grid-cols-2 gap-2">
+              {tiles.map((tile, i) => (
+                <motion.div
+                  key={tile.title}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ ...soft, delay: 0.05 + i * 0.04 }}
+                  className={`flex min-w-0 items-start gap-2 rounded-[12px] px-2.5 py-2 ${i === 4 ? "col-span-2" : ""}`}
+                  style={{ background: "var(--aegis-cream-soft)", border: "1px solid var(--aegis-border)" }}
+                >
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                    style={{ background: "var(--aegis-ink)", color: "var(--aegis-cream-soft)" }}
+                  >
+                    {tile.icon}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-[12.5px]" style={{ color: CHARCOAL, fontWeight: 600 }}>
+                      {tile.title}
+                    </div>
+                    <div className="truncate text-[11px]" style={{ color: MUTED }}>
+                      {tile.sub}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          );
+        })()}
 
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...soft, delay: 0.3 }}
-          className="flex items-center justify-center gap-2 text-[12.5px]"
+          className="flex items-center justify-center gap-2 text-[12px]"
           style={{ color: MUTED }}
         >
           <span>{t("onb.pro.priceProLabel", "Pro")}</span>
