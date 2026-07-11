@@ -680,7 +680,7 @@ function LockPage() {
               {cooldownLeft > 0 ? `Wait ${Math.ceil(cooldownLeft / 1000)}s` : "Unlock vault"}
             </DarkButton>
 
-            {(bioEnrolled && bioAvailable) || pinEnrolled ? <OrDivider /> : null}
+            {((bioEnrolled && bioAvailable) || pinEnrolled) && <OrDivider />}
 
             {bioEnrolled && bioAvailable && (
               <SecondaryPill
@@ -688,6 +688,18 @@ function LockPage() {
                 busy={bioBusy}
                 icon={<Fingerprint className="h-4 w-4" strokeWidth={1.8} />}
                 label="Continue with Biometrics"
+              />
+            )}
+
+            {pinEnrolled && (
+              <SecondaryPill
+                onClick={() => {
+                  setTab("pin");
+                  setNotice(null);
+                  setPin("");
+                }}
+                icon={<KeyRound className="h-4 w-4" strokeWidth={1.8} />}
+                label="Use PIN instead"
               />
             )}
           </motion.form>
