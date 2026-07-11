@@ -98,9 +98,9 @@ function CallbackPage() {
           <motion.div
             className="relative flex h-[58px] w-[58px] items-center justify-center rounded-full text-white"
             style={{
-              background: "linear-gradient(180deg, #4f6bff 0%, #3548d1 100%)",
+              background: "linear-gradient(180deg, #2b2926 0%, #1c1c1c 100%)",
               boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.28), 0 12px 24px -12px rgba(53,72,209,0.55)",
+                "inset 0 1px 0 rgba(255,255,255,0.18), 0 12px 24px -12px rgba(28,28,28,0.58)",
             }}
             animate={reduce ? undefined : { rotate: [0, 6, 0, -6, 0] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}

@@ -936,7 +936,7 @@ function SecondaryPill({
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
         <>
-          <span style={{ color: "#4f6bff" }}>{icon}</span>
+          <span style={{ color: "var(--aegis-fav)" }}>{icon}</span>
           <span>{label}</span>
         </>
       )}
@@ -1094,12 +1094,12 @@ function Keypad({
 function VaultIllustration() {
   return (
     <div className="relative h-full w-full" aria-hidden>
-      {/* Brand-blue ambient glow bleeding into the starfield */}
+      {/* Warm gold ambient glow connects this unlock screen to the vault. */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(55% 55% at 62% 55%, rgba(79,107,255,0.32), transparent 72%)",
+            "radial-gradient(55% 55% at 62% 55%, rgba(201,154,43,0.28), transparent 72%)",
           filter: "blur(10px)",
         }}
       />
@@ -1116,7 +1116,7 @@ function VaultIllustration() {
           className="pointer-events-none h-[118px] w-auto select-none sm:h-[138px]"
           style={{
             filter:
-              "drop-shadow(0 14px 22px rgba(0,0,0,0.5)) drop-shadow(0 0 28px rgba(79,107,255,0.38))",
+              "drop-shadow(0 14px 22px rgba(0,0,0,0.5)) drop-shadow(0 0 28px rgba(201,154,43,0.30))",
           }}
         />
       </motion.div>

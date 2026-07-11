@@ -207,6 +207,17 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     overscroll-behavior: none;
+    min-width: 320px;
+    min-height: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -251,6 +262,14 @@
 /* Hide scrollbar entirely for premium feel */
 .aegis-scroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .aegis-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* Gentle mobile-only surface depth: every screen feels like one product. */
+@media (max-width: 540px) {
+  .aegis-scroll {
+    scroll-padding-top: 116px;
+    scroll-padding-bottom: 124px;
+  }
+}
 
 /* Scroll-driven fade for headers / sections (Chrome, Edge, Safari 26+) */
 @supports (animation-timeline: view()) {

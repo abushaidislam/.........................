@@ -13,7 +13,7 @@ import {
 } from "@/components/aegis/chrome";
 
 /* -------------------------------------------------------------------------- */
-/*  Shared dark-hero + cream-sheet layout for auth / reset / callback flows.  */
+/*  Shared ink-hero + cream-sheet layout for auth / reset / callback flows.   */
 /*  Mobile-first, safe-area aware, and identical visual language across all   */
 /*  entry screens.                                                            */
 /* -------------------------------------------------------------------------- */
@@ -52,14 +52,14 @@ export function Starfield() {
       className="absolute inset-0 overflow-hidden"
       style={{
         background:
-          "radial-gradient(120% 80% at 78% 12%, rgba(255,255,255,0.10), transparent 55%), radial-gradient(80% 80% at 10% 0%, rgba(255,255,255,0.05), transparent 55%), linear-gradient(180deg, #0d0d1b 0%, #10101f 55%, #16162a 100%)",
+          "radial-gradient(100% 80% at 88% 0%, rgba(210,169,96,0.20), transparent 55%), radial-gradient(85% 80% at 8% 8%, rgba(255,239,208,0.10), transparent 58%), linear-gradient(180deg, #1c1c1c 0%, #25221d 58%, #312a20 100%)",
       }}
     >
       <div
         className="absolute inset-0 opacity-[0.35]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
+            "linear-gradient(rgba(255,248,235,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,248,235,0.045) 1px, transparent 1px)",
           backgroundSize: "44px 44px",
           maskImage: "radial-gradient(120% 90% at 70% 10%, black 30%, transparent 80%)",
         }}
@@ -90,9 +90,9 @@ export function BrandRow() {
       <span
         className="flex h-8 w-8 items-center justify-center rounded-[9px]"
         style={{
-          background: "linear-gradient(140deg, #4f6bff 0%, #2b3ec9 100%)",
+          background: "linear-gradient(140deg, #e4bd68 0%, #b9842f 100%)",
           boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 16px -6px rgba(79,107,255,0.55)",
+            "inset 0 1px 0 rgba(255,255,255,0.32), 0 6px 16px -6px rgba(201,154,43,0.45)",
         }}
       >
         <Shield className="h-4 w-4" strokeWidth={2} />
@@ -125,7 +125,7 @@ export function StarfieldHeroLayout({
   return (
     <div
       className="fixed inset-0 flex flex-col overflow-hidden"
-      style={{ background: "#0d0d1b" }}
+      style={{ background: "#1c1c1c" }}
     >
       {/* Hero — shrinks aggressively on short viewports (landscape / on-screen keyboard) */}
       <div
@@ -144,7 +144,7 @@ export function StarfieldHeroLayout({
               className="absolute right-[8%] top-1/2 h-[62%] w-[78%] -translate-y-1/2 rounded-full"
               style={{
                 background:
-                  "radial-gradient(closest-side, rgba(79,107,255,0.32), rgba(79,107,255,0) 70%)",
+                  "radial-gradient(closest-side, rgba(213,169,91,0.28), rgba(213,169,91,0) 70%)",
                 filter: "blur(6px)",
               }}
             />
@@ -286,27 +286,30 @@ export function BlueButton({
   loading,
   disabled,
   onClick,
+  testId,
 }: {
   children: ReactNode;
   type?: "button" | "submit";
   loading?: boolean;
   disabled?: boolean;
   onClick?: () => void;
+  testId?: string;
 }) {
   return (
     <motion.button
       type={type}
+      data-testid={testId}
       onClick={onClick}
       disabled={disabled || loading}
       whileTap={disabled || loading ? undefined : { scale: 0.985, opacity: 0.95 }}
       transition={spring}
       className="relative flex h-[50px] w-full items-center justify-center rounded-[12px] text-[15px] font-semibold text-white outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60"
       style={{
-        background: "linear-gradient(180deg, #4f6bff 0%, #3548d1 100%)",
+        background: "linear-gradient(180deg, #2b2926 0%, #1c1c1c 100%)",
         boxShadow:
-          "inset 0 1px 0 rgba(255,255,255,0.28), 0 12px 24px -12px rgba(53,72,209,0.55), 0 2px 4px rgba(53,72,209,0.2)",
+          "inset 0 1px 0 rgba(255,255,255,0.16), 0 12px 24px -12px rgba(28,28,28,0.58), 0 2px 4px rgba(28,28,28,0.22)",
         letterSpacing: "-0.005em",
-        ["--tw-ring-color" as string]: "rgba(53,72,209,0.55)",
+        ["--tw-ring-color" as string]: "rgba(28,28,28,0.55)",
         ["--tw-ring-offset-color" as string]: CREAM,
       }}
     >

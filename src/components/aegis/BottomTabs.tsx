@@ -47,16 +47,16 @@ export function BottomTabs() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...soft, delay: 0.08 }}
       aria-label="Primary"
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-[max(14px,env(safe-area-inset-bottom))]"
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-30 flex justify-center px-3 pb-[max(12px,env(safe-area-inset-bottom))]"
     >
       <div
-        className="pointer-events-auto mx-auto flex w-full max-w-[420px] items-stretch justify-between gap-1 rounded-[20px] px-2 py-2"
+        className="pointer-events-auto mx-auto flex w-full max-w-[420px] items-stretch justify-between gap-1 rounded-[22px] px-2 py-2"
         style={{
-          background: CREAM_SOFT,
-          border: `1px solid ${BORDER}`,
+          background: "color-mix(in oklab, var(--aegis-cream-soft) 86%, transparent)",
+          border: `1px solid color-mix(in oklab, ${BORDER} 86%, transparent)`,
           boxShadow:
-            "0 -1px 0 rgba(255,255,255,0.6) inset, 0 16px 40px -18px rgb(var(--aegis-ink-rgb) / 0.28), 0 4px 14px -8px rgb(var(--aegis-ink-rgb) / 0.18)",
-          backdropFilter: "blur(8px)",
+            "0 1px 0 rgba(255,255,255,0.62) inset, 0 18px 44px -19px rgb(var(--aegis-ink-rgb) / 0.38), 0 4px 14px -8px rgb(var(--aegis-ink-rgb) / 0.20)",
+          backdropFilter: "blur(18px) saturate(1.12)",
         }}
       >
         {TABS.map((tab) => {
@@ -71,6 +71,7 @@ export function BottomTabs() {
                 key={tab.id}
                 to={tab.to}
                 aria-label={label}
+                data-testid={`bottom-tab-${tab.id}`}
                 aria-disabled={disabled || undefined}
                 onClick={(e) => {
                   if (disabled) {
@@ -117,6 +118,7 @@ export function BottomTabs() {
               key={tab.id}
               to={tab.to}
               aria-label={label}
+              data-testid={`bottom-tab-${tab.id}`}
               aria-current={active ? "page" : undefined}
               className="relative flex flex-1 flex-col items-center justify-center gap-1 rounded-[14px] py-1.5"
             >
