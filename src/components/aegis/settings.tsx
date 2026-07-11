@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Shield } from "lucide-react";
 import { BORDER, CHARCOAL, CREAM_SOFT, DANGER, MUTED, soft } from "./chrome";
 
 /**
@@ -11,24 +11,37 @@ import { BORDER, CHARCOAL, CREAM_SOFT, DANGER, MUTED, soft } from "./chrome";
 
 export function AppBar({ title, trailing }: { title?: string; trailing?: ReactNode }) {
   return (
-    <div
-      className="sticky top-0 z-10 -mx-6 flex h-12 shrink-0 items-center justify-between px-6"
+    <motion.header
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={soft}
+      className="sticky top-0 z-20 -mx-6 flex h-14 shrink-0 items-center justify-between px-6"
       style={{
         color: CHARCOAL,
-        background: "color-mix(in oklab, var(--aegis-cream) 88%, transparent)",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
-        borderBottom: `1px solid transparent`,
+        background: "color-mix(in oklab, var(--aegis-cream) 84%, transparent)",
+        backdropFilter: "blur(16px) saturate(1.1)",
+        WebkitBackdropFilter: "blur(16px) saturate(1.1)",
+        borderBottom: `1px solid rgb(var(--aegis-ink-rgb) / 0.06)`,
       }}
     >
-      <span
-        className="text-[15px]"
-        style={{ fontFamily: "'Geist', ui-sans-serif, system-ui, sans-serif", fontWeight: 600, letterSpacing: "-0.01em" }}
-      >
-        {title ?? ""}
-      </span>
+      <div className="flex min-w-0 items-center gap-2.5">
+        <span
+          aria-hidden
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px]"
+          style={{ background: CHARCOAL, color: CREAM_SOFT, boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.14), 0 5px 12px -7px rgb(var(--aegis-ink-rgb) / 0.55)" }}
+        >
+          <Shield className="h-3.5 w-3.5" strokeWidth={1.9} />
+        </span>
+        <span
+          data-testid="page-app-bar-title"
+          className="truncate text-[14px]"
+          style={{ fontFamily: "'Geist', ui-sans-serif, system-ui, sans-serif", fontWeight: 650, letterSpacing: "-0.012em" }}
+        >
+          {title ?? "Aegis"}
+        </span>
+      </div>
       <div className="flex items-center gap-1">{trailing}</div>
-    </div>
+    </motion.header>
   );
 }
 
@@ -46,8 +59,9 @@ export function AppBarButton({
       whileTap={{ scale: 0.9 }}
       onClick={onClick}
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full"
-      style={{ color: CHARCOAL }}
+      data-testid={`app-bar-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-button`}
+      className="flex h-9 w-9 items-center justify-center rounded-full transition-colors"
+      style={{ color: CHARCOAL, background: "rgb(var(--aegis-ink-rgb) / 0.05)", border: `1px solid ${BORDER}` }}
     >
       {children}
     </motion.button>
@@ -56,8 +70,18 @@ export function AppBarButton({
 
 export function LargeTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <div className="sticky top-0 z-10 -mx-6 flex flex-col gap-1 px-6 pt-[max(28px,env(safe-area-inset-top))] pb-4">
+    <motion.header
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={soft}
+      className="sticky top-0 z-10 -mx-6 flex flex-col gap-1 px-6 pt-[max(24px,env(safe-area-inset-top))] pb-5"
+    >
+      <div className="mb-1 flex items-center gap-2">
+        <span className="h-px w-5" style={{ background: "rgb(var(--aegis-ink-rgb) / 0.32)" }} />
+        <span className="text-[9px] uppercase" style={{ color: MUTED, letterSpacing: "0.18em", fontWeight: 700 }}>Aegis vault</span>
+      </div>
       <h1
+        data-testid="page-large-title"
         className="text-[28px] leading-[1.08]"
         style={{
           color: CHARCOAL,
@@ -85,7 +109,7 @@ export function LargeTitle({ title, subtitle }: { title: string; subtitle?: stri
             "linear-gradient(to bottom, rgb(var(--aegis-ink-rgb)) 0%, rgb(var(--aegis-ink-rgb)) 70%, rgb(var(--aegis-ink-rgb) / 0.6) 88%, transparent 100%)",
         }}
       />
-    </div>
+    </motion.header>
   );
 }
 

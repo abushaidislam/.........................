@@ -251,7 +251,7 @@ function AuthPage() {
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
                     className="h-[15px] w-[15px] rounded-[4px] border"
-                    style={{ accentColor: "#3b52e0", borderColor: BORDER }}
+                    style={{ accentColor: CHARCOAL, borderColor: BORDER }}
                   />
                   {t("auth.rememberMe", "Remember me")}
                 </label>
@@ -262,7 +262,7 @@ function AuthPage() {
                     setMode("reset");
                   }}
                   className="font-medium"
-                  style={{ color: "#3b52e0" }}
+                  style={{ color: CHARCOAL }}
                 >
                   {t("auth.link.forgot", "Forgot password?")}
                 </button>
@@ -317,7 +317,7 @@ function AuthPage() {
               type="button"
               onClick={() => setMode("signin")}
               className="mx-auto text-[13px] font-medium"
-              style={{ color: "#3b52e0" }}
+              style={{ color: CHARCOAL }}
             >
               {t("auth.backToSignin", "Back to sign in")}
             </button>
