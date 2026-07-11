@@ -44,6 +44,7 @@ import {
   StarfieldHeroLayout,
 } from "@/components/aegis/starfield-hero";
 import { PasswordField, StrengthMeter, scoreStrength } from "@/components/aegis/password-field";
+import vaultIllustration from "@/assets/vault-illustration.png.asset.json";
 
 /* Charcoal primary button — matches onboarding's PrimaryButton language. */
 const INK_INSET_SHADOW =
@@ -619,6 +620,8 @@ function LockPage() {
       heroTitle="Unlock your vault"
       heroMinVh={16}
     >
+      <VaultIllustration />
+
       <SegmentedTabs
         value={tab}
         onChange={(next) => {
@@ -633,6 +636,7 @@ function LockPage() {
           }
         }}
       />
+
 
       <AnimatePresence mode="wait" initial={false}>
         {tab === "passphrase" ? (
@@ -1025,7 +1029,11 @@ function Keypad({
   }, [onDigit, onDelete, onSubmit, submitReady]);
 
   return (
-    <div ref={btnRef} className="grid grid-cols-3 gap-2">
+    <div
+      ref={btnRef}
+      className="grid w-full grid-cols-3 gap-2 sm:gap-2.5"
+      style={{ gridAutoRows: "minmax(52px, 1fr)" }}
+    >
       {keys.map((k, i) => {
         if (k === "") return <span key={i} />;
         if (k === "del") {
@@ -1055,11 +1063,33 @@ function Keypad({
         }
         return (
           <KeypadButton key={i} onClick={() => onDigit(k)} ariaLabel={`Digit ${k}`}>
-            <span className="text-[19px] font-semibold tabular-nums">{k}</span>
+            <span className="text-[20px] font-semibold tabular-nums leading-none">{k}</span>
           </KeypadButton>
         );
       })}
     </div>
+  );
+}
+
+function VaultIllustration() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 220, damping: 24, mass: 0.9 }}
+      className="mx-auto -mt-2 flex w-full items-center justify-center"
+      aria-hidden
+    >
+      <img
+        src={vaultIllustration.url}
+        alt=""
+        draggable={false}
+        className="pointer-events-none h-[112px] w-auto select-none sm:h-[128px]"
+        style={{
+          filter: "drop-shadow(0 18px 24px rgba(15,15,32,0.18))",
+        }}
+      />
+    </motion.div>
   );
 }
 
@@ -1077,7 +1107,7 @@ function KeypadButton({
   ariaLabel?: string;
 }) {
   const base =
-    "flex h-[48px] items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-1 transition-colors disabled:opacity-40";
+    "flex h-full min-h-[52px] w-full items-center justify-center rounded-[16px] outline-none focus-visible:ring-2 focus-visible:ring-offset-1 transition-colors disabled:opacity-40 touch-manipulation select-none";
   const styles: Record<typeof variant, React.CSSProperties> = {
     digit: {
       background: CREAM_SOFT,
@@ -1107,7 +1137,7 @@ function KeypadButton({
       className={base}
       style={{
         ...styles[variant],
-        maxHeight: 78,
+        WebkitTapHighlightColor: "transparent",
       }}
     >
       {children}
