@@ -11,16 +11,12 @@ import { render, cleanup, screen } from "@testing-library/react";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 // Stub the crypto/DB boundary so we don't need an unlocked vault.
-vi.mock("@/lib/vault-accounts", async (orig) => {
-  const actual = await orig<typeof import("@/lib/vault-accounts")>();
-  return {
-    ...actual,
-    generateCode: vi.fn(() => "123456"),
-    advanceHotpCounter: vi.fn(async () => ({ counter: 1, code: "654321" })),
-    setAccountTags: vi.fn(async () => ({ tags: [], queued: false })),
-    updateAccountDetails: vi.fn(async () => ({ issuer: "", label: "", queued: false })),
-  };
-});
+vi.mock("@/lib/vault-accounts", () => ({
+  generateCode: () => "123456",
+  advanceHotpCounter: vi.fn(async () => ({ counter: 1, code: "654321" })),
+  setAccountTags: vi.fn(async () => ({ tags: [], queued: false })),
+  updateAccountDetails: vi.fn(async () => ({ issuer: "", label: "", queued: false })),
+}));
 vi.mock("@/lib/vault-session", () => ({ getVaultKey: () => ({} as unknown) }));
 vi.mock("@/lib/vault-sharing", () => ({ shareAccountByEmail: vi.fn() }));
 vi.mock("@/lib/vault-privacy", () => ({ useHideCodes: () => false }));
