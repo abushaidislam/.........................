@@ -15,10 +15,10 @@ vi.mock("@/lib/vault-accounts", async (orig) => {
   const actual = await orig<typeof import("@/lib/vault-accounts")>();
   return {
     ...actual,
-    generateCode: vi.fn(async () => "123456"),
+    generateCode: vi.fn(() => "123456"),
     advanceHotpCounter: vi.fn(async () => ({ counter: 1, code: "654321" })),
-    setAccountTags: vi.fn(async () => {}),
-    updateAccountDetails: vi.fn(async () => {}),
+    setAccountTags: vi.fn(async () => ({ tags: [], queued: false })),
+    updateAccountDetails: vi.fn(async () => ({ issuer: "", label: "", queued: false })),
   };
 });
 vi.mock("@/lib/vault-session", () => ({ getVaultKey: () => ({} as unknown) }));
