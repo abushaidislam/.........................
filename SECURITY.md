@@ -1,7 +1,33 @@
-# Aegis — Security Policy (v0.1)
+# Aegis — Security Policy
 
 Aegis is a zero-knowledge TOTP authenticator. This document is the source of
 truth for our security posture. It will grow as we harden.
+
+## Reporting a vulnerability
+
+Report suspected vulnerabilities to **security@aegis.local** (PGP key
+fingerprint published on the release blog). We commit to:
+
+- Acknowledging the report within **72 hours**.
+- Providing a triage severity within **7 days**.
+- Coordinating public disclosure with the reporter once a fix is shipped.
+
+Please do **not** file public GitHub issues for security reports. Users
+who prefer anonymous reporting can use the in-app "Report a problem"
+form (Profile → Support) — messages are stored server-side under an
+admin-only RLS policy.
+
+## Review cadence
+
+- **Quarterly** — external pentest against the web app, extension, and
+  self-hosted Compose stack. Findings and remediation status merged
+  into this file under a new "Findings" section per quarter.
+- **Every migration** — the Supabase security linter runs in CI; any
+  new critical or high finding blocks the merge.
+- **Every release** — the security scanner in the Lovable console must
+  be green before publishing.
+
+
 
 ## Zero-knowledge invariant
 

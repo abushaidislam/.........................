@@ -35,7 +35,9 @@ import {
   Users,
   Sparkles,
   CreditCard,
+  MessageCircle,
 } from "lucide-react";
+import { FeedbackSheet } from "@/components/aegis/feedback-sheet";
 import {
   BORDER,
   CHARCOAL,
@@ -250,6 +252,7 @@ function ProfilePage() {
   const [avatarSheet, setAvatarSheet] = useState(false);
   const [themeSheet, setThemeSheet] = useState(false);
   const [localeSheet, setLocaleSheet] = useState(false);
+  const [feedbackSheet, setFeedbackSheet] = useState(false);
 
   const [notice, setNotice] = useState<{ kind: "error" | "info"; text: string } | null>(null);
   const [themePref, setThemePrefState] = useState<ThemePref>(() => getThemePref());
@@ -772,6 +775,20 @@ function ProfilePage() {
           />
         </SettingsGroup>
 
+        <SectionLabel>{t("profile.section.support", "Support")}</SectionLabel>
+        <SettingsGroup>
+          <SettingsRow
+            icon={<MessageCircle className="h-4 w-4" strokeWidth={1.8} />}
+            title={t("profile.feedback", "Report a problem")}
+            description={t(
+              "profile.feedback.description",
+              "Bugs, ideas, or questions — sent straight to us.",
+            )}
+            onClick={() => setFeedbackSheet(true)}
+            chevron
+          />
+        </SettingsGroup>
+
         <SectionLabel>{t("profile.section.session", "Session")}</SectionLabel>
         <SettingsGroup>
           <SettingsRow
@@ -840,6 +857,7 @@ function ProfilePage() {
             onClose={() => setPlanSheet(false)}
           />
         )}
+        {feedbackSheet && <FeedbackSheet onClose={() => setFeedbackSheet(false)} />}
       </AnimatePresence>
       <PlanComparisonSheet open={compareSheet} onClose={() => setCompareSheet(false)} />
       <PremiumWelcomeSheet
