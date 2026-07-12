@@ -52,6 +52,7 @@
   "content_scripts": [
     {
       "matches": [
+        "https://aegis-v2.flinkeo.online/*",
         "https://aegis-syed.lovable.app/*",
         "https://id-preview--04418077-cd09-40ce-bb05-4708ee844e27.lovable.app/*",
         "http://localhost:8080/*"
@@ -65,6 +66,7 @@
   ],
   "externally_connectable": {
     "matches": [
+      "https://aegis-v2.flinkeo.online/*",
       "https://aegis-syed.lovable.app/*",
       "https://id-preview--04418077-cd09-40ce-bb05-4708ee844e27.lovable.app/*",
       "http://localhost:8080/*"
@@ -75,5 +77,5 @@
   },
   "web_accessible_resources": [],
   "minimum_chrome_version": "110",
-  "homepage_url": "https://aegis-syed.lovable.app"
+  "homepage_url": "https://aegis-v2.flinkeo.online"
 }
