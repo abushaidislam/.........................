@@ -22,6 +22,7 @@ import {
   Trash2,
   RefreshCw,
   CalendarClock,
+  ShieldOff,
 
 } from "lucide-react";
 
@@ -70,6 +71,11 @@ import {
   isBiometricEnabled,
   isBiometricSupported,
 } from "@/lib/biometric";
+import {
+  isAutoUnlockEnabled,
+  enableAutoUnlock,
+  disableAutoUnlock,
+} from "@/lib/auto-unlock";
 import { listAccounts } from "@/lib/vault-accounts";
 import { buildEncryptedExport, downloadExport } from "@/lib/vault-export";
 import {
@@ -161,6 +167,47 @@ function SecurityPage() {
   const [bioSupported, setBioSupported] = useState(false);
   const [bioEnrolled, setBioEnrolled] = useState<boolean>(() => isBiometricEnabled(user.id));
   const [bioBusy, setBioBusy] = useState(false);
+  const [autoUnlock, setAutoUnlock] = useState<boolean>(() => isAutoUnlockEnabled(user.id));
+  const [autoUnlockBusy, setAutoUnlockBusy] = useState(false);
+
+  const toggleAutoUnlock = async (next: boolean) => {
+    if (autoUnlockBusy) return;
+    setAutoUnlockBusy(true);
+    setNotice(null);
+    try {
+      if (next) {
+        const confirmed = window.confirm(
+          "Turn off passphrase unlock?\n\nThe vault will open on this device without asking for your passphrase, PIN or biometric. Anyone with access to this browser will be able to read your codes.\n\nContinue?",
+        );
+        if (!confirmed) {
+          setAutoUnlockBusy(false);
+          return;
+        }
+        const dek = getVaultKey();
+        if (!dek) throw new Error("Unlock the vault first, then turn this on.");
+        await enableAutoUnlock(user.id, dek);
+        setAutoUnlock(true);
+        setNotice({
+          kind: "info",
+          text: "Passphrase unlock is off on this device. The vault will open automatically.",
+        });
+      } else {
+        disableAutoUnlock(user.id);
+        setAutoUnlock(false);
+        setNotice({
+          kind: "info",
+          text: "Passphrase unlock is back on. You'll be asked next time this device opens the vault.",
+        });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Could not update this setting.";
+      setNotice({ kind: "error", text: msg });
+      setAutoUnlock(isAutoUnlockEnabled(user.id));
+    } finally {
+      setAutoUnlockBusy(false);
+    }
+  };
+
 
   useEffect(() => {
     let cancelled = false;
@@ -276,6 +323,8 @@ function SecurityPage() {
     try {
       await supabase.from("vault_accounts").delete().eq("user_id", user.id);
       await supabase.from("vault_meta").delete().eq("user_id", user.id);
+      disableAutoUnlock(user.id);
+      setAutoUnlock(false);
       lockVault();
       navigate({ to: "/lock", replace: true });
     } catch (err) {
@@ -390,6 +439,26 @@ function SecurityPage() {
                 onCheckedChange={(v) => void toggleBiometric(v)}
                 onClick={(e) => e.stopPropagation()}
                 aria-label="Biometric unlock"
+              />
+            }
+          />
+          <SettingsRow
+            icon={<ShieldOff className="h-4 w-4" strokeWidth={1.8} />}
+            title={t("security.autoUnlock", "Passphrase unlock")}
+            description={
+              autoUnlock
+                ? "Off — this device opens the vault automatically without asking."
+                : "On — passphrase, PIN or biometric is required to open the vault."
+            }
+            onClick={autoUnlockBusy ? undefined : () => void toggleAutoUnlock(!autoUnlock)}
+            disabled={autoUnlockBusy}
+            trailing={
+              <Switch
+                checked={!autoUnlock}
+                disabled={autoUnlockBusy}
+                onCheckedChange={(v) => void toggleAutoUnlock(!v)}
+                onClick={(e) => e.stopPropagation()}
+                aria-label="Passphrase unlock"
               />
             }
           />
