@@ -794,7 +794,7 @@ function VaultPage() {
 
       {accounts && accounts.length > 0 && !selectionMode && (
         <div
-          className="sticky z-20 -mx-6 px-6 pt-1 pb-3"
+          className="sticky z-20 -mx-4 px-4 pt-1 pb-3 sm:-mx-6 sm:px-6"
           style={{
             top: 0,
             background:
