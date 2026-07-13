@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/friendly-errors";
 import { MUTED } from "@/components/aegis/chrome";
 import { PasswordField, StrengthMeter, scoreStrength } from "@/components/aegis/password-field";
 import {
@@ -50,6 +51,7 @@ function ResetPasswordPage() {
     return m === id ? fallback : m;
   };
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<{ kind: "error" | "info"; text: string } | null>(null);
   const [ready, setReady] = useState(false);
@@ -64,9 +66,15 @@ function ResetPasswordPage() {
     return () => data.subscription.unsubscribe();
   }, []);
 
+  const mismatch = confirm.length > 0 && confirm !== password;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setNotice(null);
+    if (password !== confirm) {
+      setNotice({ kind: "error", text: t("authReset.mismatch", "Passwords don't match.") });
+      return;
+    }
     setLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({ password });
@@ -74,10 +82,9 @@ function ResetPasswordPage() {
       setNotice({ kind: "info", text: t("authReset.success", "Password updated. Redirecting…") });
       setTimeout(() => navigate({ to: "/", replace: true }), 800);
     } catch (err) {
-      setNotice({
-        kind: "error",
-        text: err instanceof Error ? err.message : t("authReset.error", "Could not update password."),
-      });
+      const raw = err instanceof Error ? err.message : String(err ?? "");
+      if (typeof console !== "undefined") console.warn("[auth] reset", raw);
+      setNotice({ kind: "error", text: friendlyAuthError(raw) });
     } finally {
       setLoading(false);
     }
@@ -111,12 +118,33 @@ function ResetPasswordPage() {
           </div>
         </div>
 
+        <div className="flex flex-col gap-1.5">
+          <span
+            className="text-[12.5px] font-medium"
+            style={{ color: MUTED, letterSpacing: "-0.005em" }}
+          >
+            {t("authReset.confirmLabel", "Confirm new password")}
+          </span>
+          <PasswordField
+            value={confirm}
+            onChange={setConfirm}
+            autoComplete="new-password"
+            minLength={8}
+            placeholder={t("authReset.confirmPlaceholder", "Repeat new password")}
+          />
+          {mismatch && (
+            <p className="px-1 text-[11.5px]" style={{ color: "rgb(var(--aegis-danger-rgb))" }}>
+              {t("authReset.mismatch", "Passwords don't match.")}
+            </p>
+          )}
+        </div>
+
         {notice && <InlineNotice kind={notice.kind}>{notice.text}</InlineNotice>}
 
         <BlueButton
           type="submit"
           loading={loading}
-          disabled={!ready || scoreStrength(password) < 2}
+          disabled={!ready || scoreStrength(password) < 2 || mismatch || confirm.length === 0}
         >
           {t("authReset.button", "Update password")}
         </BlueButton>
