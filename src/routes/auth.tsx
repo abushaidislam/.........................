@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLingui } from "@lingui/react";
 import { supabase } from "@/integrations/supabase/client";
+import { friendlyAuthError } from "@/lib/friendly-errors";
 import { lovable } from "@/integrations/lovable/index";
 import { Mail } from "lucide-react";
 import {
