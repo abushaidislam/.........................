@@ -65,6 +65,7 @@ import {
   toBytes,
   toByteaHex,
   unwrapVaultKey,
+  wrapExistingDekWithPassphrase,
 } from "@/lib/vault-crypto";
 import {
   disableBiometric,
@@ -172,25 +173,40 @@ function SecurityPage() {
   const [autoUnlockBusy, setAutoUnlockBusy] = useState(false);
   const [autoUnlockConfirmOpen, setAutoUnlockConfirmOpen] = useState(false);
   const [autoUnlockConfirmError, setAutoUnlockConfirmError] = useState<string | null>(null);
+  // Whether a passphrase has ever been set (i.e. vault_meta exists).
+  // Loaded alongside the passphrase hint below.
+  const [hasPassphrase, setHasPassphrase] = useState<boolean>(false);
+  const [setPassphraseOpen, setSetPassphraseOpen] = useState(false);
 
-  const requestAutoUnlockToggle = (next: boolean) => {
+  // Visual switch: ON when a passphrase is required to open the vault.
+  const passphraseUnlockOn = hasPassphrase && !autoUnlock;
+
+  const requestAutoUnlockToggle = (nextOn: boolean) => {
+    // `nextOn` mirrors the visual switch (ON = passphrase required).
     if (autoUnlockBusy) return;
-    if (next) {
-      // Turning OFF the passphrase requirement — high-stakes, always confirm.
-      setAutoUnlockConfirmError(null);
-      setAutoUnlockConfirmOpen(true);
+    if (nextOn) {
+      // Turning passphrase unlock ON.
+      if (hasPassphrase) {
+        // Passphrase already exists — just drop the local auto-unlock key.
+        void applyAutoUnlockChange(false);
+      } else {
+        // First time: user needs to create a passphrase.
+        setSetPassphraseOpen(true);
+      }
       return;
     }
-    void applyAutoUnlockChange(false);
+    // Turning passphrase unlock OFF — always confirm.
+    setAutoUnlockConfirmError(null);
+    setAutoUnlockConfirmOpen(true);
   };
 
-  const applyAutoUnlockChange = async (next: boolean) => {
+  const applyAutoUnlockChange = async (nextAutoUnlock: boolean) => {
     setAutoUnlockBusy(true);
     setNotice(null);
     try {
-      if (next) {
+      if (nextAutoUnlock) {
         const dek = getVaultKey();
-        if (!dek) throw new Error("Unlock the vault first, then turn this on.");
+        if (!dek) throw new Error("Unlock the vault first, then turn this off.");
         await enableAutoUnlock(user.id, dek);
         setAutoUnlock(true);
         setAutoUnlockConfirmOpen(false);
@@ -203,12 +219,12 @@ function SecurityPage() {
         setAutoUnlock(false);
         setNotice({
           kind: "info",
-          text: "Passphrase unlock is back on. You'll be asked next time this device opens the vault.",
+          text: "Passphrase unlock is on. You'll be asked next time this device opens the vault.",
         });
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Could not update this setting.";
-      if (next) {
+      if (nextAutoUnlock) {
         setAutoUnlockConfirmError(msg);
       } else {
         setNotice({ kind: "error", text: msg });
