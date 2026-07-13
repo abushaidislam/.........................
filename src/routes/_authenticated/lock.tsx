@@ -36,6 +36,7 @@ import {
   isPinEnabled,
   unlockWithPin,
 } from "@/lib/pin";
+import { isAutoUnlockEnabled, loadAutoUnlockKey, disableAutoUnlock } from "@/lib/auto-unlock";
 import { KeyRound, Fingerprint, LogOut, Delete, Loader2 } from "lucide-react";
 import { CHARCOAL, MUTED, BORDER, CREAM_SOFT } from "@/components/aegis/chrome";
 import {
