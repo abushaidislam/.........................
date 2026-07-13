@@ -70,6 +70,11 @@ import {
   isBiometricEnabled,
   isBiometricSupported,
 } from "@/lib/biometric";
+import {
+  isAutoUnlockEnabled,
+  enableAutoUnlock,
+  disableAutoUnlock,
+} from "@/lib/auto-unlock";
 import { listAccounts } from "@/lib/vault-accounts";
 import { buildEncryptedExport, downloadExport } from "@/lib/vault-export";
 import {
